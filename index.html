@@ -319,28 +319,55 @@
                 btn.innerText = "Enviando autorização...";
             }
 
-            const topic = `seb_unlock_${currentSession.toLowerCase()}`;
+            const sessionId = currentSession.trim().toLowerCase();
+            const topic = `seb_unlock_${sessionId}`;
             const url = `https://ntfy.sh/${topic}`;
 
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: 'UNLOCKED',
-                    headers: { 'Content-Type': 'text/plain' }
-                });
+            console.log(`[SEB] Enviando desbloqueio para tópico: ${topic}`);
 
-                if (response.ok) {
-                    showStatus('✅ Comando enviado! O computador foi desbloqueado com sucesso.', true);
-                    if (btn) {
-                        btn.innerText = "DESBLOQUEADO ✔";
-                        btn.style.background = "#10b981";
+            const MAX_TENTATIVAS = 3;
+            let tentativa = 0;
+            let sucesso = false;
+
+            while (tentativa < MAX_TENTATIVAS && !sucesso) {
+                tentativa++;
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        body: 'UNLOCKED',
+                        headers: {
+                            'Content-Type': 'text/plain',
+                            'Title': 'SEB Unlock',
+                            'Priority': 'urgent'
+                        }
+                    });
+
+                    if (response.ok) {
+                        sucesso = true;
+                        showStatus('✅ Comando enviado com sucesso! O computador foi desbloqueado.', true);
+                        if (btn) {
+                            btn.innerText = "DESBLOQUEADO ✔";
+                            btn.style.background = "#10b981";
+                        }
+                    } else {
+                        const errText = await response.text().catch(() => response.status);
+                        console.warn(`[SEB] Tentativa ${tentativa} falhou: HTTP ${response.status} - ${errText}`);
+                        if (tentativa < MAX_TENTATIVAS) {
+                            showStatus(`⏳ Tentativa ${tentativa} falhou. Tentando novamente...`, false);
+                            await new Promise(r => setTimeout(r, 1500));
+                        }
                     }
-                } else {
-                    throw new Error('Falha ao enviar sinal');
+                } catch (err) {
+                    console.error(`[SEB] Tentativa ${tentativa} erro de rede:`, err);
+                    if (tentativa < MAX_TENTATIVAS) {
+                        showStatus(`⏳ Erro de rede (tentativa ${tentativa}). Tentando novamente...`, false);
+                        await new Promise(r => setTimeout(r, 1500));
+                    }
                 }
-            } catch (err) {
-                console.error(err);
-                showStatus('❌ Erro de conexão ao enviar o comando. Tente novamente.', false);
+            }
+
+            if (!sucesso) {
+                showStatus('❌ Falha ao transmitir o comando após 3 tentativas. Verifique sua conexão e tente novamente.', false);
                 if (btn) {
                     btn.disabled = false;
                     btn.innerText = "TENTAR NOVAMENTE";
