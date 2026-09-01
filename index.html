@@ -6,19 +6,22 @@
     <title>Desbloqueio Remoto - Navegador SESI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         :root {
-            --bg-color: #0f172a;
+            --bg-color: #0b1120;
             --card-bg: #1e293b;
+            --card-border: #334155;
             --primary: #3b82f6;
             --primary-hover: #2563eb;
             --success: #10b981;
             --success-hover: #059669;
+            --success-glow: rgba(16, 185, 129, 0.4);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-color: #334155;
+            --accent-glow: rgba(59, 130, 246, 0.25);
         }
 
         * {
@@ -30,6 +33,7 @@
 
         body {
             background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top, #1e293b 0%, #0b1120 70%);
             color: var(--text-main);
             min-height: 100vh;
             display: flex;
@@ -41,13 +45,14 @@
 
         .container {
             width: 100%;
-            max-width: 480px;
+            max-width: 460px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 24px;
-            padding: 2rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            padding: 2.25rem 1.75rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px var(--accent-glow);
             text-align: center;
+            backdrop-filter: blur(10px);
         }
 
         .logo-badge {
@@ -56,38 +61,66 @@
             justify-content: center;
             width: 64px;
             height: 64px;
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            border-radius: 18px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border-radius: 20px;
             margin-bottom: 1.25rem;
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
         }
 
         .logo-badge svg {
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             fill: #ffffff;
         }
 
         h1 {
-            font-size: 1.5rem;
+            font-size: 1.55rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.35rem;
             color: var(--text-main);
+            letter-spacing: -0.02em;
         }
 
         p.subtitle {
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             color: var(--text-muted);
             margin-bottom: 1.5rem;
-            line-height: 1.5;
+            line-height: 1.45;
         }
 
         .session-card {
-            background: #0f172a;
-            border: 1px dashed var(--primary);
-            border-radius: 12px;
-            padding: 1rem;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1.5px solid #3b82f6;
+            border-radius: 16px;
+            padding: 1.25rem 1rem;
             margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .session-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.15);
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            margin-bottom: 0.6rem;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .session-badge .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #34d399;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #34d399;
         }
 
         .session-card .label {
@@ -95,72 +128,110 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.35rem;
         }
 
         .session-card .code {
-            font-family: monospace;
-            font-size: 1.25rem;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-size: 1.6rem;
             font-weight: 700;
             color: #60a5fa;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.12em;
+            word-break: break-all;
+            user-select: all;
         }
 
         .btn {
             width: 100%;
-            padding: 1rem 1.5rem;
+            padding: 1.05rem 1.5rem;
             font-size: 1.05rem;
             font-weight: 600;
             border: none;
             border-radius: 14px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 0.6rem;
+            letter-spacing: 0.02em;
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
         }
 
         .btn-success {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: #ffffff;
-            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 10px 25px var(--success-glow);
         }
 
-        .btn-success:hover {
+        .btn-success:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 14px 24px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 14px 28px rgba(16, 185, 129, 0.5);
+            background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+        }
+
+        .btn-success-done {
+            background: #059669 !important;
+            color: #ffffff !important;
+            box-shadow: none !important;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: #ffffff;
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 14px 24px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 12px 24px rgba(59, 130, 246, 0.45);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            font-size: 0.92rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-color: #64748b;
         }
 
         .scanner-container {
             width: 100%;
-            border-radius: 16px;
+            border-radius: 18px;
             overflow: hidden;
             border: 2px solid var(--border-color);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
             background: #000;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
         }
 
         #reader {
             width: 100%;
         }
 
+        #reader video {
+            border-radius: 16px;
+            object-fit: cover;
+        }
+
         .status-box {
             display: none;
-            padding: 1.25rem;
-            border-radius: 16px;
-            margin-top: 1.5rem;
+            padding: 1rem 1.25rem;
+            border-radius: 14px;
+            margin-top: 1.25rem;
+            font-size: 0.95rem;
+            line-height: 1.45;
             animation: fadeIn 0.3s ease;
         }
 
@@ -177,19 +248,46 @@
         }
 
         .manual-input {
-            margin-top: 1rem;
+            margin-top: 0.75rem;
             display: flex;
             gap: 0.5rem;
         }
 
         .manual-input input {
             flex: 1;
-            padding: 0.75rem 1rem;
+            padding: 0.8rem 1rem;
             background: #0f172a;
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 12px;
             color: #fff;
             font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .manual-input input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 1.25rem 0 1rem 0;
+            color: #475569;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .divider span {
+            padding: 0 0.75rem;
         }
 
         .footer {
@@ -198,8 +296,16 @@
             color: var(--text-muted);
         }
 
+        .spinner {
+            animation: rotate 1s linear infinite;
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
@@ -216,32 +322,48 @@
         <h1>Desbloqueio SESI</h1>
         <p class="subtitle">Painel de autorização do Navegador Seguro SESI</p>
 
-        <!-- Modo Direct Unlock (via URL com ?session=ID) -->
+        <!-- View de Confirmação e Desbloqueio (Exibida após leitura do QR Code ou inserção do código) -->
         <div id="directView" style="display: none;">
             <div class="session-card">
-                <div class="label">Código da Sessão</div>
+                <div class="session-badge">
+                    <span class="dot"></span>
+                    Código Identificado
+                </div>
+                <div class="label">Sessão da Prova</div>
                 <div class="code" id="sessionCodeDisplay">---</div>
             </div>
 
             <button class="btn btn-success" id="unlockBtn" onclick="sendUnlockSignal()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6z"/>
                 </svg>
                 DESBLOQUEAR NAVEGADOR
             </button>
+
+            <button class="btn btn-secondary" onclick="scanAnother()" style="margin-top: 0.85rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                    <path d="M21 3v5h-5"/>
+                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                    <path d="M3 21v-5h5"/>
+                </svg>
+                Escanear Outro Computador
+            </button>
         </div>
 
-        <!-- Modo Scan (sem parametro na URL) -->
+        <!-- View do Scanner (Câmera Ativa) -->
         <div id="scanView">
             <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-                Aponte a câmera para o QR Code na tela do computador para autorizar o acesso.
+                Aponte a câmera para o QR Code na tela do computador do aluno para identificar a sessão.
             </p>
             <div class="scanner-container">
                 <div id="reader"></div>
             </div>
 
+            <div class="divider"><span>ou digite manualmente</span></div>
+
             <div class="manual-input">
-                <input type="text" id="manualSessionInput" placeholder="Digite o Código da Sessão">
+                <input type="text" id="manualSessionInput" placeholder="Código da Sessão" autocomplete="off" autocorrect="off" autocapitalize="characters">
                 <button class="btn btn-primary" style="width: auto; padding: 0.75rem 1.25rem;" onclick="handleManualUnlock()">Acessar</button>
             </div>
         </div>
@@ -254,7 +376,9 @@
     </div>
 
     <script>
+        let html5QrCode = null;
         let currentSession = null;
+        let isScannerRunning = false;
 
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -264,59 +388,132 @@
         window.addEventListener('DOMContentLoaded', () => {
             const sessionParam = getQueryParam('session');
             if (sessionParam) {
-                currentSession = sessionParam.trim();
-                document.getElementById('sessionCodeDisplay').innerText = currentSession;
-                document.getElementById('directView').style.display = 'block';
-                document.getElementById('scanView').style.display = 'none';
+                showConfirmationView(sessionParam.trim());
             } else {
                 startScanner();
             }
+
+            document.getElementById('manualSessionInput')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleManualUnlock();
+                }
+            });
         });
 
-        function startScanner() {
-            const html5QrCode = new Html5Qrcode("reader");
-            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        async function startScanner() {
+            document.getElementById('directView').style.display = 'none';
+            document.getElementById('scanView').style.display = 'block';
+            document.getElementById('statusBox').style.display = 'none';
 
-            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
-            .catch(err => {
-                console.warn("Câmera indisponível:", err);
-            });
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+
+            const config = {
+                fps: 15,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+
+            try {
+                if (!isScannerRunning) {
+                    await html5QrCode.start(
+                        { facingMode: "environment" },
+                        config,
+                        onScanSuccess,
+                        () => {} // Ignora falhas de frame intermediário
+                    );
+                    isScannerRunning = true;
+                }
+            } catch (err) {
+                console.warn("Câmera indisponível ou permissão negada:", err);
+            }
         }
 
-        function onScanSuccess(decodedText) {
+        async function stopScanner() {
+            if (html5QrCode && isScannerRunning) {
+                try {
+                    await html5QrCode.stop();
+                    isScannerRunning = false;
+                } catch (err) {
+                    console.warn("Erro ao parar scanner:", err);
+                }
+            }
+        }
+
+        async function onScanSuccess(decodedText) {
+            let session = null;
             try {
                 const url = new URL(decodedText);
-                const session = url.searchParams.get('session');
-                if (session) {
-                    currentSession = session;
-                    sendUnlockSignal();
-                } else {
-                    currentSession = decodedText.trim();
-                    sendUnlockSignal();
-                }
+                session = url.searchParams.get('session') || decodedText.trim();
             } catch (e) {
-                currentSession = decodedText.trim();
-                sendUnlockSignal();
+                session = decodedText.trim();
+            }
+
+            if (session) {
+                if (navigator.vibrate) {
+                    navigator.vibrate(100);
+                }
+                await stopScanner();
+                showConfirmationView(session);
             }
         }
 
         function handleManualUnlock() {
-            const val = document.getElementById('manualSessionInput').value.trim();
+            const input = document.getElementById('manualSessionInput');
+            const val = input ? input.value.trim() : '';
             if (!val) {
                 showStatus('Por favor, informe o código da sessão.', false);
                 return;
             }
-            currentSession = val;
-            sendUnlockSignal();
+            stopScanner();
+            showConfirmationView(val);
+        }
+
+        function showConfirmationView(sessionId) {
+            currentSession = sessionId;
+            document.getElementById('sessionCodeDisplay').innerText = sessionId;
+            document.getElementById('scanView').style.display = 'none';
+            document.getElementById('directView').style.display = 'block';
+            document.getElementById('statusBox').style.display = 'none';
+            resetUnlockButton();
+        }
+
+        function resetUnlockButton() {
+            const btn = document.getElementById('unlockBtn');
+            if (btn) {
+                btn.disabled = false;
+                btn.className = 'btn btn-success';
+                btn.innerHTML = `
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6z"/>
+                    </svg>
+                    DESBLOQUEAR NAVEGADOR
+                `;
+            }
+        }
+
+        function scanAnother() {
+            currentSession = null;
+            startScanner();
         }
 
         async function sendUnlockSignal() {
-            if (!currentSession) return;
+            if (!currentSession) {
+                showStatus('Nenhum código de sessão identificado.', false);
+                return;
+            }
 
             const btn = document.getElementById('unlockBtn');
             if (btn) {
                 btn.disabled = true;
-                btn.innerText = "Enviando autorização...";
+                btn.innerHTML = `
+                    <svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.25)" stroke-width="3"></circle>
+                        <path d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" fill="#ffffff"></path>
+                    </svg>
+                    Enviando desbloqueio...
+                `;
             }
 
             const sessionId = currentSession.trim().toLowerCase();
@@ -344,24 +541,29 @@
 
                     if (response.ok) {
                         sucesso = true;
-                        showStatus('✅ Comando enviado com sucesso! O computador foi desbloqueado.', true);
+                        showStatus('✅ Comando enviado com sucesso! O computador do aluno foi desbloqueado.', true);
                         if (btn) {
-                            btn.innerText = "DESBLOQUEADO ✔";
-                            btn.style.background = "#10b981";
+                            btn.className = 'btn btn-success-done';
+                            btn.innerHTML = `
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                                </svg>
+                                DESBLOQUEADO COM SUCESSO ✔
+                            `;
                         }
                     } else {
                         const errText = await response.text().catch(() => response.status);
                         console.warn(`[SEB] Tentativa ${tentativa} falhou: HTTP ${response.status} - ${errText}`);
                         if (tentativa < MAX_TENTATIVAS) {
                             showStatus(`⏳ Tentativa ${tentativa} falhou. Tentando novamente...`, false);
-                            await new Promise(r => setTimeout(r, 1500));
+                            await new Promise(r => setTimeout(r, 1200));
                         }
                     }
                 } catch (err) {
                     console.error(`[SEB] Tentativa ${tentativa} erro de rede:`, err);
                     if (tentativa < MAX_TENTATIVAS) {
                         showStatus(`⏳ Erro de rede (tentativa ${tentativa}). Tentando novamente...`, false);
-                        await new Promise(r => setTimeout(r, 1500));
+                        await new Promise(r => setTimeout(r, 1200));
                     }
                 }
             }
@@ -370,7 +572,13 @@
                 showStatus('❌ Falha ao transmitir o comando após 3 tentativas. Verifique sua conexão e tente novamente.', false);
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerText = "TENTAR NOVAMENTE";
+                    btn.className = 'btn btn-primary';
+                    btn.innerHTML = `
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        </svg>
+                        TENTAR NOVAMENTE
+                    `;
                 }
             }
         }
