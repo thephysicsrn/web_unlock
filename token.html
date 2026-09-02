@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SESI • Gerador de Token do Fiscal</title>
+    <style>
+        :root {
+            --bg-color: #0F172A;
+            --card-bg: #1E293B;
+            --primary: #004B87;
+            --primary-light: #0284C7;
+            --accent: #10B981;
+            --danger: #EF4444;
+            --text-main: #F8FAFC;
+            --text-sub: #94A3B8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            text-align: center;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #002D54 0%, #004B87 100%);
+            padding: 24px 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header p {
+            color: #CBD5E1;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .content {
+            padding: 30px 24px;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .token-box {
+            background-color: #0F172A;
+            border: 2px solid #3B82F6;
+            border-radius: 16px;
+            padding: 24px 16px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .token-label {
+            font-size: 12px;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .token-code {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: 6px;
+            color: #38BDF8;
+            font-family: 'Courier New', Courier, monospace;
+            text-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+        }
+
+        .timer-container {
+            margin-top: 14px;
+        }
+
+        .progress-bar-bg {
+            background-color: #334155;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--accent);
+            width: 100%;
+            transition: width 1s linear, background-color 0.3s ease;
+        }
+
+        .timer-text {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-top: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .info-card {
+            background-color: rgba(15, 23, 42, 0.6);
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 12.5px;
+            color: #94A3B8;
+            line-height: 1.5;
+            text-align: left;
+            margin-bottom: 20px;
+            border: 1px solid #1E293B;
+        }
+
+        .info-card strong {
+            color: #F1F5F9;
+        }
+
+        .btn-copy {
+            background-color: #0284C7;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-copy:hover {
+            background-color: #0369A1;
+        }
+
+        .footer {
+            padding: 16px;
+            font-size: 11px;
+            color: #64748B;
+            border-top: 1px solid #334155;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ SESI • Token do Fiscal</h1>
+            <p>Desbloqueio Seguro Instantâneo Anti-Vazamento</p>
+        </div>
+        <div class="content">
+            <div class="badge">⚡ 100% Offline • Sem Dependência de Internet</div>
+
+            <div class="token-box">
+                <div class="token-label">Token Dinâmico de 6 Dígitos</div>
+                <div class="token-code" id="tokenDisplay">------</div>
+                
+                <div class="timer-container">
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progressFill"></div>
+                    </div>
+                    <div class="timer-text">
+                        <span>Expira em:</span>
+                        <span id="timerSeconds">30s</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                🔒 <strong>Como Usar:</strong><br>
+                1. Digite estes <strong>6 números</strong> no computador do aluno para desbloquear na hora.<br>
+                2. <strong>Anti-Fraude:</strong> Mesmo que o aluno veja você digitando, este código perde a validade em poucos segundos.<br>
+                3. Senha mestra de emergência: <code>WindSurfe123</code>.
+            </div>
+
+            <button class="btn-copy" onclick="copyToken()">
+                📋 Copiar Código
+            </button>
+        </div>
+        <div class="footer">
+            Sistema de Avaliações SESI Escola • Desenvolvido por Mateus Zeca
+        </div>
+    </div>
+
+    <script>
+        const SECRET_BASE32 = "SESISISTEMARN234";
+
+        function base32Decode(base32) {
+            const clean = base32.replace(/=+$/, "").toUpperCase();
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+            let bitCount = 0;
+            let buffer = 0;
+            const output = [];
+            for (const c of clean) {
+                const val = alphabet.indexOf(c);
+                if (val < 0) continue;
+                buffer = (buffer << 5) | val;
+                bitCount += 5;
+                if (bitCount >= 8) {
+                    bitCount -= 8;
+                    output.push((buffer >> bitCount) & 0xFF);
+                }
+            }
+            return new Uint8Array(output);
+        }
+
+        async function computeTotp(step) {
+            const keyBytes = base32Decode(SECRET_BASE32);
+            const counterBytes = new Uint8Array(8);
+            let temp = step;
+            for (let i = 7; i >= 0; i--) {
+                counterBytes[i] = temp & 0xff;
+                temp = Math.floor(temp / 256);
+            }
+
+            const cryptoKey = await window.crypto.subtle.importKey(
+                "raw",
+                keyBytes,
+                { name: "HMAC", hash: "SHA-1" },
+                false,
+                ["sign"]
+            );
+
+            const signature = await window.crypto.subtle.sign("HMAC", cryptoKey, counterBytes);
+            const hash = new Uint8Array(signature);
+            const offset = hash[hash.length - 1] & 0x0F;
+
+            const binary = ((hash[offset] & 0x7F) << 24) |
+                           ((hash[offset + 1] & 0xFF) << 16) |
+                           ((hash[offset + 2] & 0xFF) << 8) |
+                           (hash[offset + 3] & 0xFF);
+
+            const otp = binary % 1000000;
+            return String(otp).padStart(6, "0");
+        }
+
+        let currentOtp = "";
+
+        async function updateToken() {
+            const epoch = Math.floor(Date.now() / 1000);
+            const step = Math.floor(epoch / 30);
+            const remaining = 30 - (epoch % 30);
+
+            currentOtp = await computeTotp(step);
+            
+            document.getElementById("tokenDisplay").innerText = currentOtp.slice(0, 3) + " " + currentOtp.slice(3);
+            document.getElementById("timerSeconds").innerText = remaining + "s";
+
+            const progress = (remaining / 30) * 100;
+            const fill = document.getElementById("progressFill");
+            fill.style.width = progress + "%";
+
+            if (remaining <= 5) {
+                fill.style.backgroundColor = "var(--danger)";
+            } else if (remaining <= 10) {
+                fill.style.backgroundColor = "#F59E0B";
+            } else {
+                fill.style.backgroundColor = "var(--accent)";
+            }
+        }
+
+        function copyToken() {
+            if (!currentOtp) return;
+            navigator.clipboard.writeText(currentOtp).then(() => {
+                const btn = document.querySelector(".btn-copy");
+                const originalText = btn.innerHTML;
+                btn.innerHTML = "✅ Código Copiado!";
+                btn.style.backgroundColor = "var(--accent)";
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.backgroundColor = "#0284C7";
+                }, 1500);
+            });
+        }
+
+        updateToken();
+        setInterval(updateToken, 1000);
+    </script>
+</body>
+</html>
