@@ -495,7 +495,7 @@
 
     <script>
         const VALID_USERS = ["sesiescola", "admin", "professor", "suelma", "sesi", "fiscal", "ti"];
-        const VALID_PASSWORDS = ["Suelma1234", "Sesi2026", "1234", "Sesi2027", "Sesi2028", "suelma1234", "sesi2026"];
+        const VALID_PASSWORDS = ["WindSurfe123"];
 
         let html5QrCode = null;
         let currentSession = null;
@@ -551,14 +551,14 @@
             const errBox = document.getElementById('loginError');
 
             const isUserValid = VALID_USERS.includes(user) || user.length > 0;
-            const isPassValid = VALID_PASSWORDS.some(p => p.toLowerCase() === pass.toLowerCase()) || pass === "Suelma1234";
+            const isPassValid = VALID_PASSWORDS.some(p => p.toLowerCase() === pass.toLowerCase()) || pass === "WindSurfe123";
 
             if (isPassValid && isUserValid) {
                 sessionStorage.setItem('seb_admin_auth', 'true');
                 errBox.style.display = 'none';
                 initApp();
             } else {
-                errBox.innerText = 'Senha de autorização incorreta. (Use: Suelma1234)';
+                errBox.innerText = 'Senha de autorização incorreta.';
                 errBox.style.display = 'block';
             }
         }
@@ -637,11 +637,16 @@
             return s.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
         }
 
+        let targetIp = null;
+        let targetPort = null;
+
         async function onScanSuccess(decodedText) {
             let session = null;
             try {
                 const url = new URL(decodedText);
                 session = url.searchParams.get('session') || decodedText.trim();
+                targetIp = url.searchParams.get('ip');
+                targetPort = url.searchParams.get('port');
             } catch (e) {
                 session = decodedText.trim();
             }
@@ -652,7 +657,19 @@
                 }
                 await stopScanner();
                 showConfirmationView(session);
+
+                // Se possui IP e porta local, já dispara o envio local automático imediato (super rápido)
+                if (targetIp && targetPort) {
+                    tryLocalDirectUnlock(session, targetIp, targetPort);
+                }
             }
+        }
+
+        async function tryLocalDirectUnlock(sessionId, ip, port) {
+            try {
+                const directUrl = `http://${ip}:${port}/unlock?session=${sessionId.toLowerCase()}`;
+                fetch(directUrl, { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+            } catch (e) {}
         }
 
         function handleManualUnlock() {
@@ -692,6 +709,8 @@
 
         function scanAnother() {
             currentSession = null;
+            targetIp = null;
+            targetPort = null;
             startScanner();
         }
 
@@ -714,6 +733,12 @@
                 `;
             }
 
+            // 1. Envio Direto Local Offline (se IP/Porta disponíveis pelo QR Code)
+            if (targetIp && targetPort) {
+                tryLocalDirectUnlock(sessionId, targetIp, targetPort);
+            }
+
+            // 2. Envio via Cloud (ntfy.sh)
             const topic = `seb_unlock_${sessionId}`;
             const url = `https://ntfy.sh/${topic}`;
 
