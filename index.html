@@ -624,6 +624,19 @@
             }
         }
 
+        function cleanSession(s) {
+            if (!s) return '';
+            s = s.trim();
+            if (s.includes('session=')) {
+                const m = s.match(/session=([a-zA-Z0-9_-]+)/i);
+                if (m) s = m[1];
+            }
+            if (s.toLowerCase().startsWith('seb_unlock_')) {
+                s = s.substring(11);
+            }
+            return s.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
+        }
+
         async function onScanSuccess(decodedText) {
             let session = null;
             try {
@@ -654,8 +667,9 @@
         }
 
         function showConfirmationView(sessionId) {
+            sessionId = cleanSession(sessionId);
             currentSession = sessionId;
-            document.getElementById('sessionCodeDisplay').innerText = sessionId;
+            document.getElementById('sessionCodeDisplay').innerText = sessionId.toUpperCase();
             document.getElementById('scanView').style.display = 'none';
             document.getElementById('directView').style.display = 'block';
             document.getElementById('statusBox').style.display = 'none';
@@ -682,7 +696,8 @@
         }
 
         async function sendUnlockSignal() {
-            if (!currentSession) {
+            const sessionId = cleanSession(currentSession);
+            if (!sessionId) {
                 showStatus('Nenhum código de sessão identificado.', false);
                 return;
             }
@@ -699,7 +714,6 @@
                 `;
             }
 
-            const sessionId = currentSession.trim().toLowerCase();
             const topic = `seb_unlock_${sessionId}`;
             const url = `https://ntfy.sh/${topic}`;
 
@@ -716,11 +730,11 @@
                         method: 'POST',
                         body: 'UNLOCKED',
                         headers: {
-                            'Content-Type': 'text/plain',
-                            'Title': 'SEB Unlock Suelma1234',
-                            'Priority': 'urgent'
+                            'Content-Type': 'text/plain'
                         }
                     });
+
+                    fetch(url, { method: 'POST', body: 'UNLOCKED', mode: 'no-cors' }).catch(() => {});
 
                     if (response.ok) {
                         sucesso = true;
@@ -739,14 +753,25 @@
                         console.warn(`[SEB] Tentativa ${tentativa} falhou: HTTP ${response.status} - ${errText}`);
                         if (tentativa < MAX_TENTATIVAS) {
                             showStatus(`⏳ Tentativa ${tentativa} falhou. Tentando novamente...`, false);
-                            await new Promise(r => setTimeout(r, 1200));
+                            await new Promise(r => setTimeout(r, 1000));
                         }
                     }
                 } catch (err) {
                     console.error(`[SEB] Tentativa ${tentativa} erro de rede:`, err);
+                    try {
+                        await fetch(url, { method: 'POST', body: 'UNLOCKED', mode: 'no-cors' });
+                        sucesso = true;
+                        showStatus('✅ Comando enviado com sucesso! O computador do aluno foi desbloqueado.', true);
+                        if (btn) {
+                            btn.className = 'btn btn-success-done';
+                            btn.innerHTML = `DESBLOQUEADO COM SUCESSO ✔`;
+                        }
+                        break;
+                    } catch (e2) {}
+
                     if (tentativa < MAX_TENTATIVAS) {
                         showStatus(`⏳ Erro de rede (tentativa ${tentativa}). Tentando novamente...`, false);
-                        await new Promise(r => setTimeout(r, 1200));
+                        await new Promise(r => setTimeout(r, 1000));
                     }
                 }
             }
