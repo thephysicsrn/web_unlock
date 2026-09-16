@@ -49,16 +49,17 @@
 
         .container {
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 24px;
-            padding: 1.75rem 1.5rem;
+            padding: 1.5rem 1.25rem;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px var(--accent-glow);
             text-align: center;
             backdrop-filter: blur(10px);
             position: relative;
             margin: auto 0;
+            box-sizing: border-box;
         }
 
         .header-top {
@@ -149,29 +150,55 @@
 
         /* Nav Tabs */
         .tab-bar {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 4px;
             background: #0f172a;
             padding: 4px;
             border-radius: 14px;
             margin-bottom: 1.25rem;
             border: 1px solid var(--border-color);
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .tab-btn {
-            flex: 1;
-            padding: 0.65rem 0.5rem;
+            width: 100%;
+            min-width: 0;
+            padding: 0.6rem 0.2rem;
             background: transparent;
             border: none;
             color: var(--text-muted);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.4rem;
+            gap: 0.3rem;
+            box-sizing: border-box;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .tab-btn span.tab-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .tab-btn svg {
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.04);
         }
 
         .tab-btn.active {
@@ -183,10 +210,36 @@
         .badge-count {
             background: #ef4444;
             color: #fff;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 10px;
+            font-size: 0.65rem;
+            padding: 1px 5px;
+            border-radius: 8px;
             font-weight: 700;
+            flex-shrink: 0;
+            line-height: 1.2;
+        }
+
+        @media (max-width: 520px) {
+            .container {
+                padding: 1.25rem 0.75rem;
+                border-radius: 20px;
+            }
+            .tab-bar {
+                gap: 2px;
+                padding: 3px;
+            }
+            .tab-btn {
+                font-size: 0.72rem;
+                padding: 0.5rem 0.1rem;
+                gap: 0.2rem;
+            }
+            .tab-btn svg {
+                width: 13px;
+                height: 13px;
+            }
+            .badge-count {
+                font-size: 0.6rem;
+                padding: 1px 4px;
+            }
         }
 
         /* Live Feed Section */
@@ -575,32 +628,32 @@
 
             <!-- Abas de Navegação -->
             <div class="tab-bar">
-                <button class="tab-btn active" id="tabFeedBtn" onclick="switchTab('feed')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <button class="tab-btn active" id="tabFeedBtn" onclick="switchTab('feed')" title="Solicitações e Alertas">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
                     </svg>
-                    <span>Solicitações</span>
+                    <span class="tab-label">Alertas</span>
                     <span class="badge-count" id="feedCountBadge" style="display: none;">0</span>
                 </button>
-                <button class="tab-btn" id="tabComputersBtn" onclick="switchTab('computers')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <button class="tab-btn" id="tabComputersBtn" onclick="switchTab('computers')" title="Computadores Conectados">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
                     </svg>
-                    <span>Computadores</span>
+                    <span class="tab-label">Máquinas</span>
                     <span class="badge-count" id="computersCountBadge" style="display: none; background: #38bdf8;">0</span>
                 </button>
-                <button class="tab-btn" id="tabHistoryBtn" onclick="switchTab('history')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <button class="tab-btn" id="tabHistoryBtn" onclick="switchTab('history')" title="Histórico de Liberações">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
                     </svg>
-                    <span>Histórico</span>
+                    <span class="tab-label">Histórico</span>
                     <span class="badge-count" id="historyCountBadge" style="display: none; background: #10b981;">0</span>
                 </button>
-                <button class="tab-btn" id="tabScanBtn" onclick="switchTab('scan')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <button class="tab-btn" id="tabScanBtn" onclick="switchTab('scan')" title="Escanear QR Code">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M3 5v4h2V5h4V3H5c-1.1 0-2 .9-2 2zm2 10H3v4c0 1.1.9 2 2 2h4v-2H5v-4zm14 4h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zm0-16h-4v2h4v4h2V5c0-1.1-.9-2-2-2z"/>
                     </svg>
-                    <span>Escanear QR</span>
+                    <span class="tab-label">Scanner</span>
                 </button>
             </div>
 
