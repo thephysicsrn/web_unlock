@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SESI • Desbloqueio Remoto</title>
+    <title>SESI • Painel do Fiscal em Tempo Real</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         :root {
@@ -21,6 +21,7 @@
             --danger: #ef4444;
             --danger-hover: #dc2626;
             --danger-glow: rgba(239, 68, 68, 0.4);
+            --warning: #f59e0b;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-color: #334155;
@@ -42,28 +43,29 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
+            justify-content: flex-start;
+            padding: 1.25rem 1rem;
         }
 
         .container {
             width: 100%;
-            max-width: 480px;
+            max-width: 500px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 24px;
-            padding: 2.25rem 1.75rem;
+            padding: 1.75rem 1.5rem;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 30px var(--accent-glow);
             text-align: center;
             backdrop-filter: blur(10px);
             position: relative;
+            margin: auto 0;
         }
 
         .header-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
         }
 
         .logout-btn {
@@ -79,7 +81,6 @@
             align-items: center;
             gap: 0.35rem;
             transition: all 0.2s;
-            margin-bottom: 0.75rem;
         }
 
         .logout-btn:hover {
@@ -87,42 +88,266 @@
             border-color: #ef4444;
         }
 
+        .conn-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .conn-pill .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: livePulse 1.5s infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
         .logo-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 64px;
-            height: 64px;
+            width: 56px;
+            height: 56px;
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            border-radius: 20px;
-            margin-bottom: 1.25rem;
+            border-radius: 18px;
+            margin-bottom: 1rem;
             box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
         }
 
         .logo-badge svg {
-            width: 34px;
-            height: 34px;
+            width: 28px;
+            height: 28px;
             fill: #ffffff;
         }
 
-        .badge-violation {
-            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
-            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.4) !important;
-        }
-
         h1 {
-            font-size: 1.55rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.25rem;
             color: var(--text-main);
             letter-spacing: -0.02em;
         }
 
         p.subtitle {
-            font-size: 0.92rem;
+            font-size: 0.88rem;
             color: var(--text-muted);
-            margin-bottom: 1.5rem;
-            line-height: 1.45;
+            margin-bottom: 1.25rem;
+            line-height: 1.4;
+        }
+
+        /* Nav Tabs */
+        .tab-bar {
+            display: flex;
+            background: #0f172a;
+            padding: 4px;
+            border-radius: 14px;
+            margin-bottom: 1.25rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.65rem 0.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .tab-btn.active {
+            background: #1e293b;
+            color: #38bdf8;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .badge-count {
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        /* Live Feed Section */
+        .live-feed-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .feed-empty {
+            background: #0f172a;
+            border: 1px dashed var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem 1rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .feed-empty svg {
+            width: 42px;
+            height: 42px;
+            color: #475569;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Live Alert Item Card */
+        .alert-card {
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.15rem;
+            animation: cardSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            border-left: 4px solid var(--primary);
+        }
+
+        .alert-card.card-exit {
+            border-left-color: #38bdf8;
+            background: linear-gradient(135deg, #0f172a 0%, #0e1e38 100%);
+        }
+
+        .alert-card.card-violation {
+            border-left-color: #ef4444;
+            background: linear-gradient(135deg, #180d11 0%, #291016 100%);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        @keyframes cardSlideIn {
+            from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.65rem;
+        }
+
+        .alert-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+        }
+
+        .alert-tag.tag-exit {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+        }
+
+        .alert-tag.tag-violation {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .alert-time {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .alert-machine {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .alert-reason {
+            font-size: 0.82rem;
+            color: #cbd5e1;
+            margin-bottom: 0.85rem;
+            line-height: 1.35;
+        }
+
+        .alert-session-pill {
+            display: inline-block;
+            font-family: monospace;
+            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #e2e8f0;
+            margin-bottom: 0.75rem;
+        }
+
+        .btn-unlock-action {
+            width: 100%;
+            padding: 0.85rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .btn-unlock-exit {
+            background: #10b981;
+            box-shadow: 0 8px 18px -4px var(--success-glow);
+        }
+
+        .btn-unlock-exit:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-unlock-violation {
+            background: #ef4444;
+            box-shadow: 0 8px 18px -4px var(--danger-glow);
+        }
+
+        .btn-unlock-violation:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .btn-unlock-action.btn-done {
+            background: #059669 !important;
+            cursor: default;
+            transform: none !important;
         }
 
         /* Form Inputs */
@@ -166,14 +391,15 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
 
-        /* Buttons */
-        .btn {
+        .btn-primary {
             width: 100%;
             padding: 1rem;
             border: none;
             border-radius: 14px;
             font-size: 1rem;
             font-weight: 600;
+            background: var(--primary);
+            color: #fff;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -181,160 +407,57 @@
             gap: 0.5rem;
             transition: all 0.2s;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: #fff;
         }
 
         .btn-primary:hover {
             background: var(--primary-hover);
-            transform: translateY(-1px);
         }
 
-        .btn-success {
-            background: var(--success);
-            color: #fff;
-            box-shadow: 0 10px 20px -5px var(--success-glow);
+        /* Scanner */
+        .scanner-container {
+            position: relative;
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px dashed var(--border-color);
+            background: #000;
+            margin-bottom: 1rem;
         }
 
-        .btn-success:hover {
-            background: var(--success-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px -5px var(--success-glow);
+        #reader {
+            width: 100%;
+            min-height: 220px;
         }
 
-        .btn-danger {
-            background: var(--danger);
-            color: #fff;
-            box-shadow: 0 10px 20px -5px var(--danger-glow);
+        #reader video {
+            border-radius: 14px;
+            object-fit: cover;
         }
 
-        .btn-danger:hover {
-            background: var(--danger-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 15px 25px -5px var(--danger-glow);
+        .manual-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
         }
 
-        .btn-success-done {
-            background: #059669;
-            color: #fff;
-            cursor: default;
-            transform: none !important;
-            box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
-        }
-
-        .btn-secondary {
-            background: #334155;
-            color: #f1f5f9;
-            font-size: 0.85rem;
-            padding: 0.75rem;
-            text-transform: none;
-            font-weight: 500;
-        }
-
-        .btn-secondary:hover {
-            background: #475569;
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        /* Session Cards */
-        .session-card {
+        .manual-input input {
+            flex: 1;
+            padding: 0.75rem 1rem;
             background: #0f172a;
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 1.25rem;
-            margin-bottom: 1.25rem;
-            position: relative;
-        }
-
-        .session-card.card-violation {
-            border-color: rgba(239, 68, 68, 0.4);
-            background: #1c0f13;
-        }
-
-        .session-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.25rem 0.65rem;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            margin-bottom: 0.5rem;
-        }
-
-        .session-badge.badge-red {
-            background: rgba(239, 68, 68, 0.15);
-            color: #f87171;
-            border-color: rgba(239, 68, 68, 0.3);
-        }
-
-        .session-badge .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: currentColor;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
-        }
-
-        .session-card .label {
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            margin-bottom: 0.25rem;
-        }
-
-        .session-card .code {
-            font-size: 1.85rem;
-            font-weight: 700;
-            color: #38bdf8;
-            letter-spacing: 0.1em;
-            font-family: monospace;
-        }
-
-        .session-card.card-violation .code {
-            color: #f87171;
-        }
-
-        .session-details {
-            margin-top: 0.65rem;
-            padding-top: 0.65rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            font-size: 0.8rem;
-            color: #cbd5e1;
-            text-align: left;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .session-details span {
-            color: #94a3b8;
-        }
-
-        /* Status Box */
-        .status-box {
-            margin-top: 1.25rem;
-            padding: 1rem;
             border-radius: 12px;
-            font-size: 0.88rem;
+            color: #fff;
+            text-transform: uppercase;
+            font-size: 0.95rem;
+            text-align: center;
+            letter-spacing: 0.05em;
+        }
+
+        .status-box {
+            margin-top: 1rem;
+            padding: 0.85rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
             line-height: 1.4;
             display: none;
             animation: fadeIn 0.3s ease;
@@ -352,81 +475,26 @@
             color: #f87171;
         }
 
-        /* Scanner */
-        .scanner-container {
-            position: relative;
-            width: 100%;
-            border-radius: 16px;
-            overflow: hidden;
-            border: 2px dashed var(--border-color);
-            background: #000;
-            margin-bottom: 1.25rem;
-        }
-
-        #reader {
-            width: 100%;
-            min-height: 240px;
-        }
-
-        #reader video {
-            border-radius: 14px;
-            object-fit: cover;
-        }
-
-        .manual-input {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .manual-input input {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            background: #0f172a;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: #fff;
-            text-transform: uppercase;
-            font-size: 1rem;
-            text-align: center;
-            letter-spacing: 0.05em;
-        }
-
-        .divider {
+        .audio-prompt {
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 10px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.78rem;
+            color: #93c5fd;
             display: flex;
             align-items: center;
-            margin: 1.25rem 0;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            cursor: pointer;
         }
 
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .divider span {
-            padding: 0 0.75rem;
-        }
-
-        .cloud-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.75rem;
-            color: #38bdf8;
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
-            margin-top: 0.5rem;
+        .audio-prompt:hover {
+            background: rgba(59, 130, 246, 0.2);
         }
 
         .footer {
-            margin-top: 1.5rem;
+            margin-top: 1.25rem;
             font-size: 0.75rem;
             color: var(--text-muted);
         }
@@ -448,7 +516,7 @@
 <body>
 
     <div class="container">
-        <!-- TELA DE LOGIN (ANTE-PÁGINA) -->
+        <!-- TELA DE LOGIN -->
         <div id="loginView">
             <div class="logo-badge">
                 <svg viewBox="0 0 24 24">
@@ -456,26 +524,26 @@
                 </svg>
             </div>
 
-            <h1>Acesso Restrito</h1>
-            <p class="subtitle">Autenticação do Fiscal de Prova SESI</p>
+            <h1>Painel do Fiscal SESI</h1>
+            <p class="subtitle">Autenticação para liberação de provas e infrações</p>
 
             <div class="form-group">
                 <div class="input-wrapper">
                     <svg viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                     </svg>
-                    <input type="text" id="loginUsername" class="form-control" placeholder="Usuário" autocomplete="username" autocapitalize="none">
+                    <input type="text" id="loginUsername" class="form-control" placeholder="Usuário (ex: fiscal)" autocomplete="username" autocapitalize="none">
                 </div>
 
                 <div class="input-wrapper">
                     <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6z"/>
+                        <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6z"/>
                     </svg>
                     <input type="password" id="loginPassword" class="form-control" placeholder="Senha" autocomplete="current-password">
                 </div>
             </div>
 
-            <button class="btn btn-primary" onclick="handleLogin()">
+            <button class="btn-primary" onclick="handleLogin()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M10 17l5-5-5-5v10z"/>
                 </svg>
@@ -485,13 +553,12 @@
             <div id="loginError" class="status-box status-error"></div>
         </div>
 
-        <!-- PAINEL PRINCIPAL DE DESBLOQUEIO (APÓS LOGIN) -->
+        <!-- PAINEL PRINCIPAL DO FISCAL -->
         <div id="mainAppView" style="display: none;">
             <div class="header-top">
-                <div class="logo-badge" id="appHeaderIcon" style="width: 44px; height: 44px; border-radius: 12px; margin-bottom: 0;">
-                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px;">
-                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-5.45 9-12V5l-9-4zm-1 6h2v2h-2V7zm0 4h2v6h-2v-6z"/>
-                    </svg>
+                <div class="conn-pill">
+                    <span class="dot"></span>
+                    <span>Monitorando ao Vivo</span>
                 </div>
                 <button class="logout-btn" onclick="handleLogout()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -501,62 +568,50 @@
                 </button>
             </div>
 
-            <h1 id="appHeaderTitle" style="margin-top: 0.5rem;">Desbloqueio SESI</h1>
-            <p id="appHeaderSubtitle" class="subtitle">Painel de autorização do Navegador Seguro SESI</p>
+            <div class="audio-prompt" id="audioPrompt" onclick="enableAudioAndNotifications()">
+                <span>🔔 Toque para ativar som de alerta e notificações</span>
+                <strong style="color: #38bdf8;">Ativar</strong>
+            </div>
 
-            <!-- View de Confirmação e Desbloqueio -->
-            <div id="directView" style="display: none;">
-                <div class="session-card" id="sessionCard">
-                    <div class="session-badge" id="sessionBadge">
-                        <span class="dot"></span>
-                        <span id="sessionBadgeText">Sessão Identificada</span>
-                    </div>
-                    <div class="label">Código da Sessão</div>
-                    <div class="code" id="sessionCodeDisplay">---</div>
-
-                    <div class="session-details" id="sessionDetails" style="display: none;">
-                        <div><span>Tipo:</span> <strong id="detailType">---</strong></div>
-                        <div id="detailReasonRow"><span>Motivo:</span> <strong id="detailReason">---</strong></div>
-                        <div id="detailMachineRow"><span>Máquina:</span> <strong id="detailMachine">---</strong></div>
-                    </div>
-                </div>
-
-                <div class="cloud-badge" id="cloudStatusBadge">
-                    ⚡ Conectado ao Google Firebase & Servidor Local
-                </div>
-
-                <button class="btn btn-success" id="unlockBtn" style="margin-top: 1rem;" onclick="sendUnlockSignal()">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6z"/>
+            <!-- Abas de Navegação -->
+            <div class="tab-bar">
+                <button class="tab-btn active" id="tabFeedBtn" onclick="switchTab('feed')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
                     </svg>
-                    <span id="unlockBtnText">DESBLOQUEAR NAVEGADOR</span>
+                    <span>Solicitações</span>
+                    <span class="badge-count" id="feedCountBadge" style="display: none;">0</span>
                 </button>
-
-                <button class="btn btn-secondary" onclick="scanAnother()" style="margin-top: 0.85rem;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                        <path d="M21 3v5h-5"/>
-                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                        <path d="M3 21v-5h5"/>
+                <button class="tab-btn" id="tabScanBtn" onclick="switchTab('scan')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 5v4h2V5h4V3H5c-1.1 0-2 .9-2 2zm2 10H3v4c0 1.1.9 2 2 2h4v-2H5v-4zm14 4h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zm0-16h-4v2h4v4h2V5c0-1.1-.9-2-2-2z"/>
                     </svg>
-                    Escanear Outro Computador
+                    <span>Escanear QR</span>
                 </button>
             </div>
 
-            <!-- View do Scanner (Câmera Ativa) -->
-            <div id="scanView">
-                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-                    Aponte a câmera para o QR Code na tela do computador para autorizar a saída ou infração.
-                </p>
+            <!-- TAB 1: FEED DE SOLICITAÇÕES EM TEMPO REAL -->
+            <div id="tabFeed">
+                <div class="live-feed-container" id="feedList">
+                    <div class="feed-empty" id="feedEmptyState">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                        </svg>
+                        <div><strong>Nenhuma solicitação pendente</strong></div>
+                        <div style="font-size: 0.8rem; margin-top: 4px;">Quando um aluno pedir para sair ou cometer infração, aparecerá aqui automaticamente.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: SCANNER DE QR CODE (FALLBACK) -->
+            <div id="tabScan" style="display: none;">
                 <div class="scanner-container">
                     <div id="reader"></div>
                 </div>
 
-                <div class="divider"><span>ou digite manualmente</span></div>
-
                 <div class="manual-input">
-                    <input type="text" id="manualSessionInput" placeholder="Código da Sessão" autocomplete="off" autocorrect="off" autocapitalize="characters">
-                    <button class="btn btn-primary" style="width: auto; padding: 0.75rem 1.25rem;" onclick="handleManualUnlock()">Acessar</button>
+                    <input type="text" id="manualSessionInput" placeholder="Código da Sessão" autocomplete="off" autocapitalize="characters">
+                    <button class="btn-primary" style="width: auto; padding: 0.75rem 1.25rem;" onclick="handleManualUnlock()">Acessar</button>
                 </div>
             </div>
 
@@ -564,21 +619,22 @@
         </div>
 
         <div class="footer">
-            Sistema de Segurança SESI Escola &bull; Versão 2.0 com Google Firebase
+            Sistema SESI Escola &bull; Firebase Realtime & Notificações ao Vivo
         </div>
     </div>
 
     <script>
+        const GLOBAL_ALERT_TOPIC = "seb_alerts_sesi";
         const FIREBASE_DB_URL = "https://sesi-secure-browser-default-rtdb.firebaseio.com";
         const VALID_USERS = ["sesiescola", "admin", "professor", "suelma", "sesi", "fiscal", "ti"];
         const VALID_PASSWORDS = ["WindSurfe123", "WindSurfe", "windsurfe123", "windsurfe"];
 
         let html5QrCode = null;
-        let currentSession = null;
-        let currentType = 'exit'; // 'exit' ou 'violation'
-        let targetIp = null;
-        let targetPort = null;
         let isScannerRunning = false;
+        let sseEventSource = null;
+        let audioContext = null;
+        let audioEnabled = false;
+        const activeRequests = new Map();
 
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -597,21 +653,15 @@
             }
 
             document.getElementById('loginUsername')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    document.getElementById('loginPassword')?.focus();
-                }
+                if (e.key === 'Enter') document.getElementById('loginPassword')?.focus();
             });
 
             document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleLogin();
-                }
+                if (e.key === 'Enter') handleLogin();
             });
 
             document.getElementById('manualSessionInput')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleManualUnlock();
-                }
+                if (e.key === 'Enter') handleManualUnlock();
             });
         });
 
@@ -619,9 +669,7 @@
             document.getElementById('loginView').style.display = 'block';
             document.getElementById('mainAppView').style.display = 'none';
             document.getElementById('loginError').style.display = 'none';
-            setTimeout(() => {
-                document.getElementById('loginUsername')?.focus();
-            }, 100);
+            setTimeout(() => document.getElementById('loginUsername')?.focus(), 100);
         }
 
         function handleLogin() {
@@ -644,9 +692,11 @@
 
         function handleLogout() {
             sessionStorage.removeItem('seb_admin_auth');
+            if (sseEventSource) {
+                sseEventSource.close();
+                sseEventSource = null;
+            }
             stopScanner();
-            document.getElementById('loginUsername').value = '';
-            document.getElementById('loginPassword').value = '';
             showLogin();
         }
 
@@ -654,34 +704,339 @@
             document.getElementById('loginView').style.display = 'none';
             document.getElementById('mainAppView').style.display = 'block';
 
-            const sessionParam = getQueryParam('session');
-            const typeParam = getQueryParam('type');
-            targetIp = getQueryParam('ip');
-            targetPort = getQueryParam('port');
+            // Inicia escuta em tempo real de alertas (SSE)
+            startAlertsListener();
 
-            if (typeParam) {
-                currentType = typeParam.toLowerCase().includes('violation') ? 'violation' : 'exit';
+            // Checa se há parâmetro direto na URL
+            const directSession = getQueryParam('session');
+            if (directSession) {
+                const directType = getQueryParam('type') || 'exit';
+                const directIp = getQueryParam('ip') || '';
+                const directPort = getQueryParam('port') || '';
+                addOrUpdateAlert({
+                    sessionId: directSession,
+                    type: directType.toUpperCase(),
+                    machine: getQueryParam('machine') || 'Computador do Aluno',
+                    reason: getQueryParam('reason') || (directType === 'violation' ? 'Infração Detectada' : 'Solicitação de Saída'),
+                    ip: directIp,
+                    port: directPort,
+                    time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                });
             }
+        }
 
-            if (sessionParam) {
-                showConfirmationView(sessionParam.trim(), currentType);
+        function switchTab(tab) {
+            const feedBtn = document.getElementById('tabFeedBtn');
+            const scanBtn = document.getElementById('tabScanBtn');
+            const tabFeed = document.getElementById('tabFeed');
+            const tabScan = document.getElementById('tabScan');
+
+            if (tab === 'feed') {
+                feedBtn.className = 'tab-btn active';
+                scanBtn.className = 'tab-btn';
+                tabFeed.style.display = 'block';
+                tabScan.style.display = 'none';
+                stopScanner();
             } else {
+                feedBtn.className = 'tab-btn';
+                scanBtn.className = 'tab-btn active';
+                tabFeed.style.display = 'none';
+                tabScan.style.display = 'block';
                 startScanner();
             }
         }
 
-        async function startScanner() {
-            document.getElementById('directView').style.display = 'none';
-            document.getElementById('scanView').style.display = 'block';
-            document.getElementById('statusBox').style.display = 'none';
+        /* ESCUTA EM TEMPO REAL VIA SSE (ntfy.sh) + Polling Firebase */
+        function startAlertsListener() {
+            if (sseEventSource) return;
 
+            try {
+                const sseUrl = `https://ntfy.sh/${GLOBAL_ALERT_TOPIC}/sse`;
+                sseEventSource = new EventSource(sseUrl);
+
+                sseEventSource.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data && data.message) {
+                            let payload = null;
+                            try {
+                                payload = JSON.parse(data.message);
+                            } catch (e) {
+                                payload = { sessionId: data.message, type: 'EXIT' };
+                            }
+
+                            if (payload.status === 'CLEARED' || payload.status === 'UNLOCKED') {
+                                removeAlert(payload.sessionId);
+                            } else if (payload.sessionId) {
+                                addOrUpdateAlert(payload);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[SSE] Mensagem ignorada:', e);
+                    }
+                };
+
+                sseEventSource.onerror = () => {
+                    console.warn('[SSE] Conexão SSE oscilou. Reconectando...');
+                };
+            } catch (err) {
+                console.error('[SSE] Erro ao iniciar EventSource:', err);
+            }
+
+            // Polling de backup a cada 3s no Firebase Realtime Database
+            setInterval(pollFirebaseActiveRequests, 3000);
+        }
+
+        async function pollFirebaseActiveRequests() {
+            try {
+                const res = await fetch(`${FIREBASE_DB_URL}/active_requests.json`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && typeof data === 'object') {
+                        Object.keys(data).forEach(k => {
+                            const item = data[k];
+                            if (item && item.sessionId && item.status === 'LOCKED') {
+                                addOrUpdateAlert(item, false);
+                            }
+                        });
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function addOrUpdateAlert(item, playSound = true) {
+            const sid = (item.sessionId || '').toUpperCase();
+            if (!sid) return;
+
+            const isNew = !activeRequests.has(sid);
+            activeRequests.set(sid, {
+                sessionId: sid,
+                type: (item.type || 'EXIT').toUpperCase(),
+                machine: item.machine || 'Computador Aluno',
+                user: item.user || 'Aluno',
+                reason: item.reason || (item.type === 'VIOLATION' ? 'Infração de Foco' : 'Solicitação de Saída'),
+                ip: item.ip || '',
+                port: item.port || '',
+                time: item.time || new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            });
+
+            renderFeed();
+
+            if (isNew && playSound) {
+                triggerNotificationEffects(item);
+            }
+        }
+
+        function removeAlert(sessionId) {
+            const sid = (sessionId || '').toUpperCase();
+            if (activeRequests.has(sid)) {
+                activeRequests.delete(sid);
+                renderFeed();
+            }
+        }
+
+        function renderFeed() {
+            const list = document.getElementById('feedList');
+            const empty = document.getElementById('feedEmptyState');
+            const countBadge = document.getElementById('feedCountBadge');
+
+            const count = activeRequests.size;
+            if (count > 0) {
+                countBadge.innerText = count;
+                countBadge.style.display = 'inline-block';
+            } else {
+                countBadge.style.display = 'none';
+            }
+
+            // Remove todos os cards antigos
+            const oldCards = list.querySelectorAll('.alert-card');
+            oldCards.forEach(c => c.remove());
+
+            if (count === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+
+            activeRequests.forEach(item => {
+                const isViolation = item.type === 'VIOLATION';
+                const card = document.createElement('div');
+                card.className = `alert-card ${isViolation ? 'card-violation' : 'card-exit'}`;
+                card.id = `card-${item.sessionId}`;
+
+                card.innerHTML = `
+                    <div class="alert-header">
+                        <span class="alert-tag ${isViolation ? 'tag-violation' : 'tag-exit'}">
+                            ${isViolation ? '🚨 INFRAÇÃO DETECTADA' : '🚪 SAÍDA SOLICITADA'}
+                        </span>
+                        <span class="alert-time">⏱️ ${item.time}</span>
+                    </div>
+
+                    <div class="alert-machine">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
+                        </svg>
+                        <span>${item.machine}</span>
+                    </div>
+
+                    <div class="alert-reason">${item.reason}</div>
+                    <div class="alert-session-pill">Sessão: ${item.sessionId}</div>
+
+                    <button class="btn-unlock-action ${isViolation ? 'btn-unlock-violation' : 'btn-unlock-exit'}" id="btn-action-${item.sessionId}" onclick="authorizeSession('${item.sessionId}', '${item.type}', '${item.ip}', '${item.port}')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6z"/>
+                        </svg>
+                        <span>${isViolation ? 'LIBERAR PROVA AGORA' : 'AUTORIZAR SAÍDA AGORA'}</span>
+                    </button>
+                `;
+
+                list.prepend(card);
+            });
+        }
+
+        async function authorizeSession(sessionId, type, ip, port) {
+            const btn = document.getElementById(`btn-action-${sessionId}`);
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.25)" stroke-width="3"></circle>
+                        <path d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" fill="#ffffff"></path>
+                    </svg>
+                    Liberando...
+                `;
+            }
+
+            const cleanSid = sessionId.toLowerCase();
+
+            // 1. Envia sinal ao Firebase Realtime DB
+            try {
+                fetch(`${FIREBASE_DB_URL}/sessions/${cleanSid}/status.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify('UNLOCKED')
+                }).catch(() => {});
+            } catch (e) {}
+
+            // 2. Envia sinal para o tópico individual ntfy.sh
+            const topic = `seb_unlock_${cleanSid}`;
+            try {
+                fetch(`https://ntfy.sh/${topic}`, {
+                    method: 'POST',
+                    body: 'UNLOCKED',
+                    headers: { 'Content-Type': 'text/plain' }
+                }).catch(() => {});
+            } catch (e) {}
+
+            // 3. Envia sinal direto na Rede Local (se IP/Porta disponíveis)
+            if (ip && port) {
+                try {
+                    fetch(`http://${ip}:${port}/unlock?session=${cleanSid}`, { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+                } catch (e) {}
+            }
+
+            if (btn) {
+                btn.className = 'btn-unlock-action btn-done';
+                btn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    LIBERADO COM SUCESSO ✔
+                `;
+            }
+
+            showStatus(`✅ Autorização transmitida com sucesso para o computador ${sessionId}!`, true);
+
+            setTimeout(() => {
+                removeAlert(sessionId);
+            }, 2000);
+        }
+
+        /* EFEITOS SONOROS E NOTIFICAÇÕES NATIVAS */
+        function enableAudioAndNotifications() {
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                playChimeSound();
+                audioEnabled = true;
+
+                if ('Notification' in window && Notification.permission !== 'granted') {
+                    Notification.requestPermission();
+                }
+
+                document.getElementById('audioPrompt').style.display = 'none';
+                showStatus('🔔 Som e notificações ativados com sucesso!', true);
+            } catch (e) {}
+        }
+
+        function triggerNotificationEffects(item) {
+            // 1. Som de Chime
+            playChimeSound();
+
+            // 2. Vibração do Celular
+            if (navigator.vibrate) {
+                navigator.vibrate([250, 100, 250]);
+            }
+
+            // 3. Notificação Push Nativa do Navegador
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const isViolation = item.type === 'VIOLATION';
+                const title = isViolation ? `🚨 SESI: Infração em ${item.machine}` : `🚪 SESI: Saída Solicitada em ${item.machine}`;
+                const body = `Motivo: ${item.reason}. Toque para autorizar.`;
+                try {
+                    new Notification(title, { body: body, icon: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' });
+                } catch (e) {}
+            }
+        }
+
+        function playChimeSound() {
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const now = audioContext.currentTime;
+
+                const osc1 = audioContext.createOscillator();
+                const osc2 = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc1.type = 'sine';
+                osc2.type = 'triangle';
+
+                osc1.frequency.setValueAtTime(587.33, now); // D5
+                osc1.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+
+                osc2.frequency.setValueAtTime(880, now + 0.15);
+                osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.35); // D6
+
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc1.start(now);
+                osc2.start(now + 0.15);
+                osc1.stop(now + 0.5);
+                osc2.stop(now + 0.5);
+            } catch (e) {}
+        }
+
+        /* SCANNER DE QR CODE (FALLBACK MANUAL) */
+        async function startScanner() {
             if (!html5QrCode) {
                 html5QrCode = new Html5Qrcode("reader");
             }
 
             const config = {
                 fps: 15,
-                qrbox: { width: 250, height: 250 },
+                qrbox: { width: 220, height: 220 },
                 aspectRatio: 1.0
             };
 
@@ -691,12 +1046,12 @@
                         { facingMode: "environment" },
                         config,
                         onScanSuccess,
-                        () => {} // Ignora falhas de frame intermediário
+                        () => {}
                     );
                     isScannerRunning = true;
                 }
             } catch (err) {
-                console.warn("Câmera indisponível ou permissão negada:", err);
+                console.warn("Câmera indisponível:", err);
             }
         }
 
@@ -705,57 +1060,40 @@
                 try {
                     await html5QrCode.stop();
                     isScannerRunning = false;
-                } catch (err) {
-                    console.warn("Erro ao parar scanner:", err);
-                }
+                } catch (err) {}
             }
         }
 
-        function cleanSession(s) {
-            if (!s) return '';
-            s = s.trim();
-            if (s.includes('session=')) {
-                const m = s.match(/session=([a-zA-Z0-9_-]+)/i);
-                if (m) s = m[1];
-            }
-            if (s.toLowerCase().startsWith('seb_unlock_')) {
-                s = s.substring(11);
-            }
-            return s.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
-        }
-
-        async function onScanSuccess(decodedText) {
+        function onScanSuccess(decodedText) {
             let session = null;
+            let type = 'EXIT';
+            let ip = '';
+            let port = '';
+
             try {
                 const url = new URL(decodedText);
                 session = url.searchParams.get('session') || decodedText.trim();
-                targetIp = url.searchParams.get('ip');
-                targetPort = url.searchParams.get('port');
+                ip = url.searchParams.get('ip') || '';
+                port = url.searchParams.get('port') || '';
                 const t = url.searchParams.get('type');
-                if (t) currentType = t.toLowerCase().includes('violation') ? 'violation' : 'exit';
+                if (t && t.toLowerCase().includes('violation')) type = 'VIOLATION';
             } catch (e) {
                 session = decodedText.trim();
             }
 
             if (session) {
-                if (navigator.vibrate) {
-                    navigator.vibrate(100);
-                }
-                await stopScanner();
-                showConfirmationView(session, currentType);
-
-                // Disparo local automático imediato se IP/Porta presentes
-                if (targetIp && targetPort) {
-                    tryLocalDirectUnlock(session, targetIp, targetPort);
-                }
+                if (navigator.vibrate) navigator.vibrate(100);
+                stopScanner();
+                switchTab('feed');
+                addOrUpdateAlert({
+                    sessionId: session,
+                    type: type,
+                    machine: 'Máquina Escaneada',
+                    reason: type === 'VIOLATION' ? 'Infração Escaneada por QR' : 'Saída Solicitada por QR',
+                    ip: ip,
+                    port: port
+                });
             }
-        }
-
-        async function tryLocalDirectUnlock(sessionId, ip, port) {
-            try {
-                const directUrl = `http://${ip}:${port}/unlock?session=${sessionId.toLowerCase()}`;
-                fetch(directUrl, { mode: 'no-cors', cache: 'no-store' }).catch(() => {});
-            } catch (e) {}
         }
 
         function handleManualUnlock() {
@@ -766,181 +1104,13 @@
                 return;
             }
             stopScanner();
-            showConfirmationView(val, 'exit');
-        }
-
-        async function showConfirmationView(sessionId, type) {
-            sessionId = cleanSession(sessionId);
-            currentSession = sessionId;
-            currentType = type || 'exit';
-
-            const isViolation = (currentType === 'violation');
-
-            document.getElementById('sessionCodeDisplay').innerText = sessionId.toUpperCase();
-            document.getElementById('scanView').style.display = 'none';
-            document.getElementById('directView').style.display = 'block';
-            document.getElementById('statusBox').style.display = 'none';
-
-            // Ajusta cores e títulos baseado no tipo
-            const card = document.getElementById('sessionCard');
-            const badge = document.getElementById('sessionBadge');
-            const badgeText = document.getElementById('sessionBadgeText');
-            const btnText = document.getElementById('unlockBtnText');
-            const btn = document.getElementById('unlockBtn');
-            const headerTitle = document.getElementById('appHeaderTitle');
-            const headerIcon = document.getElementById('appHeaderIcon');
-
-            if (isViolation) {
-                card.className = 'session-card card-violation';
-                badge.className = 'session-badge badge-red';
-                badgeText.innerText = '🚨 Infração Detectada';
-                headerTitle.innerText = 'Liberação de Infração';
-                headerIcon.className = 'logo-badge badge-violation';
-                btnText.innerText = 'LIBERAR RETOMADA DA PROVA';
-                btn.className = 'btn btn-danger';
-            } else {
-                card.className = 'session-card';
-                badge.className = 'session-badge';
-                badgeText.innerText = '🛡️ Encerramento de Prova';
-                headerTitle.innerText = 'Autorização de Saída';
-                headerIcon.className = 'logo-badge';
-                btnText.innerText = 'AUTORIZAR SAÍDA DA PROVA';
-                btn.className = 'btn btn-success';
-            }
-
-            resetUnlockButton(isViolation);
-
-            // Tenta buscar detalhes adicionais no Firebase
-            fetchSessionDetailsFromFirebase(sessionId);
-        }
-
-        async function fetchSessionDetailsFromFirebase(sessionId) {
-            try {
-                const res = await fetch(`${FIREBASE_DB_URL}/sessions/${sessionId.toLowerCase()}.json`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data) {
-                        const details = document.getElementById('sessionDetails');
-                        document.getElementById('detailType').innerText = data.type === 'VIOLATION' ? 'Bloqueio por Infração' : 'Encerramento Normal';
-                        if (data.reason) {
-                            document.getElementById('detailReason').innerText = data.reason;
-                            document.getElementById('detailReasonRow').style.display = 'block';
-                        }
-                        if (data.machine) {
-                            document.getElementById('detailMachine').innerText = data.machine;
-                            document.getElementById('detailMachineRow').style.display = 'block';
-                        }
-                        details.style.display = 'flex';
-                    }
-                }
-            } catch (e) {
-                // Silencioso se não houver dados
-            }
-        }
-
-        function resetUnlockButton(isViolation) {
-            const btn = document.getElementById('unlockBtn');
-            if (btn) {
-                btn.disabled = false;
-                btn.className = isViolation ? 'btn btn-danger' : 'btn btn-success';
-                const text = isViolation ? 'LIBERAR RETOMADA DA PROVA' : 'AUTORIZAR SAÍDA DA PROVA';
-                btn.innerHTML = `
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6z"/>
-                    </svg>
-                    <span>${text}</span>
-                `;
-            }
-        }
-
-        function scanAnother() {
-            currentSession = null;
-            targetIp = null;
-            targetPort = null;
-            currentType = 'exit';
-            startScanner();
-        }
-
-        async function sendUnlockSignal() {
-            const sessionId = cleanSession(currentSession);
-            if (!sessionId) {
-                showStatus('Nenhum código de sessão identificado.', false);
-                return;
-            }
-
-            const btn = document.getElementById('unlockBtn');
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = `
-                    <svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.25)" stroke-width="3"></circle>
-                        <path d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" fill="#ffffff"></path>
-                    </svg>
-                    Transmitindo autorização...
-                `;
-            }
-
-            let transmitSuccess = false;
-
-            // CANAL 1: Google Firebase Realtime Database (Nuvem em Tempo Real)
-            try {
-                const fbUrl = `${FIREBASE_DB_URL}/sessions/${sessionId}/status.json`;
-                const fbResponse = await fetch(fbUrl, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify('UNLOCKED')
-                });
-
-                if (fbResponse.ok) {
-                    transmitSuccess = true;
-                    console.log('[SEB] Firebase Realtime DB atualizado com sucesso!');
-                }
-            } catch (fbErr) {
-                console.warn('[SEB] Erro Firebase:', fbErr);
-            }
-
-            // CANAL 2: Envio Direto Local Offline (se IP/Porta disponíveis pelo QR Code)
-            if (targetIp && targetPort) {
-                tryLocalDirectUnlock(sessionId, targetIp, targetPort);
-            }
-
-            // CANAL 3: Envio via Cloud Fallback (ntfy.sh)
-            const topic = `seb_unlock_${sessionId}`;
-            const ntfyUrl = `https://ntfy.sh/${topic}`;
-
-            try {
-                const ntfyRes = await fetch(ntfyUrl, {
-                    method: 'POST',
-                    body: 'UNLOCKED',
-                    headers: { 'Content-Type': 'text/plain' }
-                });
-
-                if (ntfyRes.ok) {
-                    transmitSuccess = true;
-                }
-            } catch (ntfyErr) {
-                try {
-                    fetch(ntfyUrl, { method: 'POST', body: 'UNLOCKED', mode: 'no-cors' }).catch(() => {});
-                    transmitSuccess = true;
-                } catch (e) {}
-            }
-
-            if (transmitSuccess || targetIp) {
-                const actionText = (currentType === 'violation') ? 'A prova do aluno foi retomada.' : 'O encerramento foi autorizado com sucesso.';
-                showStatus(`✅ Autorizado com sucesso! ${actionText}`, true);
-                if (btn) {
-                    btn.className = 'btn btn-success-done';
-                    btn.innerHTML = `
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
-                        DESBLOQUEADO COM SUCESSO ✔
-                    `;
-                }
-            } else {
-                showStatus('❌ Não foi possível transmitir o desbloqueio. Verifique a conexão do celular e tente novamente.', false);
-                resetUnlockButton(currentType === 'violation');
-            }
+            switchTab('feed');
+            addOrUpdateAlert({
+                sessionId: val,
+                type: 'EXIT',
+                machine: 'Código Informado',
+                reason: 'Inserção Manual do Fiscal'
+            });
         }
 
         function showStatus(msg, isSuccess) {
