@@ -619,7 +619,7 @@
         </div>
 
         <div class="footer">
-            Sistema SESI Escola &bull; Firebase Realtime & Notificações ao Vivo
+            Sistema SESI Escola &bull; Notificações Instantâneas em Tempo Real
         </div>
     </div>
 
@@ -651,6 +651,20 @@
             } else {
                 showLogin();
             }
+
+            // Auto-desbloqueia áudio no primeiro toque/clique do usuário
+            ['click', 'touchstart', 'keydown'].forEach(evt => {
+                document.addEventListener(evt, () => {
+                    if (!audioContext) {
+                        try {
+                            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        } catch (e) {}
+                    }
+                    if (audioContext && audioContext.state === 'suspended') {
+                        audioContext.resume().catch(() => {});
+                    }
+                }, { passive: true });
+            });
 
             document.getElementById('loginUsername')?.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') document.getElementById('loginPassword')?.focus();
@@ -704,7 +718,7 @@
             document.getElementById('loginView').style.display = 'none';
             document.getElementById('mainAppView').style.display = 'block';
 
-            // Inicia escuta em tempo real de alertas (SSE)
+            // Inicia escuta em tempo real (SSE + Polling de alta frequência)
             startAlertsListener();
 
             // Checa se há parâmetro direto na URL
@@ -746,50 +760,88 @@
             }
         }
 
-        /* ESCUTA EM TEMPO REAL VIA SSE (ntfy.sh) + Polling Firebase */
-        function startAlertsListener() {
-            if (sseEventSource) return;
+        /* PROCESSADOR CENTRAL DE MENSAGENS DE ALERTA */
+        function processRawAlertMessage(rawItem) {
+            if (!rawItem) return;
+            let data = rawItem;
+            if (typeof rawItem === 'string') {
+                try { data = JSON.parse(rawItem); } catch (e) { return; }
+            }
 
+            if (data && (data.event === 'message' || !data.event)) {
+                let msg = data.message || data;
+                let payload = null;
+                if (typeof msg === 'string') {
+                    try { payload = JSON.parse(msg); } catch (e) { payload = { sessionId: msg, type: 'EXIT' }; }
+                } else {
+                    payload = msg;
+                }
+
+                if (payload) {
+                    if (payload.status === 'CLEARED' || payload.status === 'UNLOCKED') {
+                        removeAlert(payload.sessionId);
+                    } else if (payload.sessionId) {
+                        addOrUpdateAlert(payload, true);
+                    }
+                }
+            }
+        }
+
+        /* ESCUTA EM TEMPO REAL VIA SSE (ntfy.sh) + POLLING CONTÍNUO */
+        function startAlertsListener() {
+            // 1. Busca inicial imediata dos últimos 10 minutos
+            pollNtfyAlerts();
+
+            // 2. Conexão em tempo real SSE
             try {
-                const sseUrl = `https://ntfy.sh/${GLOBAL_ALERT_TOPIC}/sse`;
+                if (sseEventSource) {
+                    sseEventSource.close();
+                }
+
+                const sseUrl = `https://ntfy.sh/${GLOBAL_ALERT_TOPIC}/sse?since=10m`;
                 sseEventSource = new EventSource(sseUrl);
 
                 sseEventSource.onmessage = (event) => {
-                    try {
-                        const data = JSON.parse(event.data);
-                        if (data && data.message) {
-                            let payload = null;
-                            try {
-                                payload = JSON.parse(data.message);
-                            } catch (e) {
-                                payload = { sessionId: data.message, type: 'EXIT' };
-                            }
-
-                            if (payload.status === 'CLEARED' || payload.status === 'UNLOCKED') {
-                                removeAlert(payload.sessionId);
-                            } else if (payload.sessionId) {
-                                addOrUpdateAlert(payload);
-                            }
-                        }
-                    } catch (e) {
-                        console.warn('[SSE] Mensagem ignorada:', e);
-                    }
+                    processRawAlertMessage(event.data);
                 };
+
+                sseEventSource.addEventListener('message', (event) => {
+                    processRawAlertMessage(event.data);
+                });
 
                 sseEventSource.onerror = () => {
-                    console.warn('[SSE] Conexão SSE oscilou. Reconectando...');
+                    console.warn('[SSE] Conexão oscilou. Polling mantém o feed atualizado.');
                 };
             } catch (err) {
-                console.error('[SSE] Erro ao iniciar EventSource:', err);
+                console.error('[SSE] Erro EventSource:', err);
             }
 
-            // Polling de backup a cada 3s no Firebase Realtime Database
-            setInterval(pollFirebaseActiveRequests, 3000);
+            // 3. Polling de alta frequência (a cada 2 segundos) para garantia total
+            setInterval(pollNtfyAlerts, 2000);
+            setInterval(pollFirebaseActiveRequests, 3500);
+        }
+
+        async function pollNtfyAlerts() {
+            try {
+                const res = await fetch(`https://ntfy.sh/${GLOBAL_ALERT_TOPIC}/json?poll=1&since=10m`, { cache: 'no-store' });
+                if (res.ok) {
+                    const text = await res.text();
+                    const lines = text.trim().split('\n');
+                    for (const line of lines) {
+                        if (line.trim()) {
+                            try {
+                                const parsed = JSON.parse(line);
+                                processRawAlertMessage(parsed);
+                            } catch (e) {}
+                        }
+                    }
+                }
+            } catch (e) {}
         }
 
         async function pollFirebaseActiveRequests() {
             try {
-                const res = await fetch(`${FIREBASE_DB_URL}/active_requests.json`);
+                const res = await fetch(`${FIREBASE_DB_URL}/active_requests.json`, { cache: 'no-store' });
                 if (res.ok) {
                     const data = await res.json();
                     if (data && typeof data === 'object') {
@@ -870,7 +922,10 @@
                         <span class="alert-tag ${isViolation ? 'tag-violation' : 'tag-exit'}">
                             ${isViolation ? '🚨 INFRAÇÃO DETECTADA' : '🚪 SAÍDA SOLICITADA'}
                         </span>
-                        <span class="alert-time">⏱️ ${item.time}</span>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="alert-time">⏱️ ${item.time}</span>
+                            <button onclick="removeAlert('${item.sessionId}')" title="Dispensar do painel" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 2px 4px; border-radius: 4px;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#64748b'">✕</button>
+                        </div>
                     </div>
 
                     <div class="alert-machine">
