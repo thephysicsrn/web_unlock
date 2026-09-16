@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Desbloqueio Remoto - Navegador SESI</title>
+    <title>SESI • Desbloqueio Remoto</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -18,6 +18,9 @@
             --success: #10b981;
             --success-hover: #059669;
             --success-glow: rgba(16, 185, 129, 0.4);
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --danger-glow: rgba(239, 68, 68, 0.4);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-color: #334155;
@@ -45,7 +48,7 @@
 
         .container {
             width: 100%;
-            max-width: 460px;
+            max-width: 480px;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 24px;
@@ -102,6 +105,11 @@
             fill: #ffffff;
         }
 
+        .badge-violation {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+            box-shadow: 0 10px 25px rgba(220, 38, 38, 0.4) !important;
+        }
+
         h1 {
             font-size: 1.55rem;
             font-weight: 700;
@@ -149,203 +157,247 @@
             border-radius: 14px;
             color: #fff;
             font-size: 0.95rem;
-            outline: none;
             transition: all 0.2s;
         }
 
         .form-control:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
 
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #fff;
+            box-shadow: 0 10px 20px -5px var(--success-glow);
+        }
+
+        .btn-success:hover {
+            background: var(--success-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px var(--success-glow);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+            box-shadow: 0 10px 20px -5px var(--danger-glow);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px -5px var(--danger-glow);
+        }
+
+        .btn-success-done {
+            background: #059669;
+            color: #fff;
+            cursor: default;
+            transform: none !important;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
+        }
+
+        .btn-secondary {
+            background: #334155;
+            color: #f1f5f9;
+            font-size: 0.85rem;
+            padding: 0.75rem;
+            text-transform: none;
+            font-weight: 500;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Session Cards */
         .session-card {
-            background: rgba(15, 23, 42, 0.85);
-            border: 1.5px solid #3b82f6;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 1.25rem 1rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 0.3s ease;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .session-card.card-violation {
+            border-color: rgba(239, 68, 68, 0.4);
+            background: #1c0f13;
         }
 
         .session-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            font-size: 0.78rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: #34d399;
-            background: rgba(16, 185, 129, 0.15);
-            padding: 0.3rem 0.75rem;
+            gap: 0.35rem;
+            padding: 0.25rem 0.65rem;
             border-radius: 20px;
-            margin-bottom: 0.6rem;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            margin-bottom: 0.5rem;
+        }
+
+        .session-badge.badge-red {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.3);
         }
 
         .session-badge .dot {
-            width: 8px;
-            height: 8px;
-            background-color: #34d399;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 8px #34d399;
+            background: currentColor;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
         }
 
         .session-card .label {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.25rem;
         }
 
         .session-card .code {
-            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-            font-size: 1.6rem;
+            font-size: 1.85rem;
             font-weight: 700;
-            color: #60a5fa;
-            letter-spacing: 0.12em;
-            word-break: break-all;
-            user-select: all;
+            color: #38bdf8;
+            letter-spacing: 0.1em;
+            font-family: monospace;
         }
 
-        .btn {
-            width: 100%;
-            padding: 1.05rem 1.5rem;
-            font-size: 1.05rem;
-            font-weight: 600;
-            border: none;
-            border-radius: 14px;
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        .session-card.card-violation .code {
+            color: #f87171;
+        }
+
+        .session-details {
+            margin-top: 0.65rem;
+            padding-top: 0.65rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.8rem;
+            color: #cbd5e1;
+            text-align: left;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.6rem;
-            letter-spacing: 0.02em;
+            flex-direction: column;
+            gap: 0.25rem;
         }
 
-        .btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none !important;
+        .session-details span {
+            color: #94a3b8;
         }
 
-        .btn-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: #ffffff;
-            box-shadow: 0 10px 25px var(--success-glow);
-        }
-
-        .btn-success:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 14px 28px rgba(16, 185, 129, 0.5);
-            background: linear-gradient(135deg, #34d399 0%, #059669 100%);
-        }
-
-        .btn-success-done {
-            background: #059669 !important;
-            color: #ffffff !important;
-            box-shadow: none !important;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            color: #ffffff;
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(59, 130, 246, 0.45);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-            font-size: 0.92rem;
-            padding: 0.75rem 1rem;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-main);
-            border-color: #64748b;
-        }
-
-        .scanner-container {
-            width: 100%;
-            border-radius: 18px;
-            overflow: hidden;
-            border: 2px solid var(--border-color);
-            margin-bottom: 1.25rem;
-            background: #000;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
-        }
-
-        #reader {
-            width: 100%;
-        }
-
-        #reader video {
-            border-radius: 16px;
-            object-fit: cover;
-        }
-
+        /* Status Box */
         .status-box {
-            display: none;
-            padding: 1rem 1.25rem;
-            border-radius: 14px;
             margin-top: 1.25rem;
-            font-size: 0.95rem;
-            line-height: 1.45;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            display: none;
             animation: fadeIn 0.3s ease;
         }
 
         .status-success {
             background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.4);
+            border: 1px solid var(--success);
             color: #34d399;
         }
 
         .status-error {
             background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.4);
+            border: 1px solid var(--danger);
             color: #f87171;
         }
 
+        /* Scanner */
+        .scanner-container {
+            position: relative;
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px dashed var(--border-color);
+            background: #000;
+            margin-bottom: 1.25rem;
+        }
+
+        #reader {
+            width: 100%;
+            min-height: 240px;
+        }
+
+        #reader video {
+            border-radius: 14px;
+            object-fit: cover;
+        }
+
         .manual-input {
-            margin-top: 0.75rem;
             display: flex;
             gap: 0.5rem;
+            margin-top: 1rem;
         }
 
         .manual-input input {
             flex: 1;
-            padding: 0.8rem 1rem;
+            padding: 0.75rem 1rem;
             background: #0f172a;
             border: 1px solid var(--border-color);
             border-radius: 12px;
             color: #fff;
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .manual-input input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            text-transform: uppercase;
+            font-size: 1rem;
+            text-align: center;
+            letter-spacing: 0.05em;
         }
 
         .divider {
             display: flex;
             align-items: center;
-            margin: 1.25rem 0 1rem 0;
-            color: #475569;
-            font-size: 0.8rem;
+            margin: 1.25rem 0;
+            color: var(--text-muted);
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
@@ -360,9 +412,22 @@
             padding: 0 0.75rem;
         }
 
+        .cloud-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+        }
+
         .footer {
-            margin-top: 2rem;
-            font-size: 0.8rem;
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
         }
 
@@ -414,7 +479,7 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M10 17l5-5-5-5v10z"/>
                 </svg>
-                ENTRAR
+                ENTRAR NO PAINEL
             </button>
 
             <div id="loginError" class="status-box status-error"></div>
@@ -423,8 +488,8 @@
         <!-- PAINEL PRINCIPAL DE DESBLOQUEIO (APÓS LOGIN) -->
         <div id="mainAppView" style="display: none;">
             <div class="header-top">
-                <div class="logo-badge" style="width: 48px; height: 48px; border-radius: 14px; margin-bottom: 0;">
-                    <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;">
+                <div class="logo-badge" id="appHeaderIcon" style="width: 44px; height: 44px; border-radius: 12px; margin-bottom: 0;">
+                    <svg viewBox="0 0 24 24" style="width: 22px; height: 22px;">
                         <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-5.45 9-12V5l-9-4zm-1 6h2v2h-2V7zm0 4h2v6h-2v-6z"/>
                     </svg>
                 </div>
@@ -436,25 +501,35 @@
                 </button>
             </div>
 
-            <h1 style="margin-top: 0.5rem;">Desbloqueio SESI</h1>
-            <p class="subtitle">Painel de autorização do Navegador Seguro SESI</p>
+            <h1 id="appHeaderTitle" style="margin-top: 0.5rem;">Desbloqueio SESI</h1>
+            <p id="appHeaderSubtitle" class="subtitle">Painel de autorização do Navegador Seguro SESI</p>
 
-            <!-- View de Confirmação e Desbloqueio (Exibida após leitura do QR Code ou inserção do código) -->
+            <!-- View de Confirmação e Desbloqueio -->
             <div id="directView" style="display: none;">
-                <div class="session-card">
-                    <div class="session-badge">
+                <div class="session-card" id="sessionCard">
+                    <div class="session-badge" id="sessionBadge">
                         <span class="dot"></span>
-                        Código Identificado
+                        <span id="sessionBadgeText">Sessão Identificada</span>
                     </div>
-                    <div class="label">Sessão da Prova</div>
+                    <div class="label">Código da Sessão</div>
                     <div class="code" id="sessionCodeDisplay">---</div>
+
+                    <div class="session-details" id="sessionDetails" style="display: none;">
+                        <div><span>Tipo:</span> <strong id="detailType">---</strong></div>
+                        <div id="detailReasonRow"><span>Motivo:</span> <strong id="detailReason">---</strong></div>
+                        <div id="detailMachineRow"><span>Máquina:</span> <strong id="detailMachine">---</strong></div>
+                    </div>
                 </div>
 
-                <button class="btn btn-success" id="unlockBtn" onclick="sendUnlockSignal()">
+                <div class="cloud-badge" id="cloudStatusBadge">
+                    ⚡ Conectado ao Google Firebase & Servidor Local
+                </div>
+
+                <button class="btn btn-success" id="unlockBtn" style="margin-top: 1rem;" onclick="sendUnlockSignal()">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6z"/>
                     </svg>
-                    DESBLOQUEAR NAVEGADOR
+                    <span id="unlockBtnText">DESBLOQUEAR NAVEGADOR</span>
                 </button>
 
                 <button class="btn btn-secondary" onclick="scanAnother()" style="margin-top: 0.85rem;">
@@ -471,7 +546,7 @@
             <!-- View do Scanner (Câmera Ativa) -->
             <div id="scanView">
                 <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-                    Aponte a câmera para o QR Code na tela do computador do aluno para identificar a sessão.
+                    Aponte a câmera para o QR Code na tela do computador para autorizar a saída ou infração.
                 </p>
                 <div class="scanner-container">
                     <div id="reader"></div>
@@ -489,16 +564,20 @@
         </div>
 
         <div class="footer">
-            Sistema de Segurança SESI Escola &bull; Versão 2.0
+            Sistema de Segurança SESI Escola &bull; Versão 2.0 com Google Firebase
         </div>
     </div>
 
     <script>
+        const FIREBASE_DB_URL = "https://sesi-secure-browser-default-rtdb.firebaseio.com";
         const VALID_USERS = ["sesiescola", "admin", "professor", "suelma", "sesi", "fiscal", "ti"];
         const VALID_PASSWORDS = ["WindSurfe123", "WindSurfe", "windsurfe123", "windsurfe"];
 
         let html5QrCode = null;
         let currentSession = null;
+        let currentType = 'exit'; // 'exit' ou 'violation'
+        let targetIp = null;
+        let targetPort = null;
         let isScannerRunning = false;
 
         function getQueryParam(param) {
@@ -576,8 +655,16 @@
             document.getElementById('mainAppView').style.display = 'block';
 
             const sessionParam = getQueryParam('session');
+            const typeParam = getQueryParam('type');
+            targetIp = getQueryParam('ip');
+            targetPort = getQueryParam('port');
+
+            if (typeParam) {
+                currentType = typeParam.toLowerCase().includes('violation') ? 'violation' : 'exit';
+            }
+
             if (sessionParam) {
-                showConfirmationView(sessionParam.trim());
+                showConfirmationView(sessionParam.trim(), currentType);
             } else {
                 startScanner();
             }
@@ -637,9 +724,6 @@
             return s.replace(/[^a-zA-Z0-9_-]/g, '').toLowerCase();
         }
 
-        let targetIp = null;
-        let targetPort = null;
-
         async function onScanSuccess(decodedText) {
             let session = null;
             try {
@@ -647,6 +731,8 @@
                 session = url.searchParams.get('session') || decodedText.trim();
                 targetIp = url.searchParams.get('ip');
                 targetPort = url.searchParams.get('port');
+                const t = url.searchParams.get('type');
+                if (t) currentType = t.toLowerCase().includes('violation') ? 'violation' : 'exit';
             } catch (e) {
                 session = decodedText.trim();
             }
@@ -656,9 +742,9 @@
                     navigator.vibrate(100);
                 }
                 await stopScanner();
-                showConfirmationView(session);
+                showConfirmationView(session, currentType);
 
-                // Se possui IP e porta local, já dispara o envio local automático imediato (super rápido)
+                // Disparo local automático imediato se IP/Porta presentes
                 if (targetIp && targetPort) {
                     tryLocalDirectUnlock(session, targetIp, targetPort);
                 }
@@ -680,29 +766,89 @@
                 return;
             }
             stopScanner();
-            showConfirmationView(val);
+            showConfirmationView(val, 'exit');
         }
 
-        function showConfirmationView(sessionId) {
+        async function showConfirmationView(sessionId, type) {
             sessionId = cleanSession(sessionId);
             currentSession = sessionId;
+            currentType = type || 'exit';
+
+            const isViolation = (currentType === 'violation');
+
             document.getElementById('sessionCodeDisplay').innerText = sessionId.toUpperCase();
             document.getElementById('scanView').style.display = 'none';
             document.getElementById('directView').style.display = 'block';
             document.getElementById('statusBox').style.display = 'none';
-            resetUnlockButton();
+
+            // Ajusta cores e títulos baseado no tipo
+            const card = document.getElementById('sessionCard');
+            const badge = document.getElementById('sessionBadge');
+            const badgeText = document.getElementById('sessionBadgeText');
+            const btnText = document.getElementById('unlockBtnText');
+            const btn = document.getElementById('unlockBtn');
+            const headerTitle = document.getElementById('appHeaderTitle');
+            const headerIcon = document.getElementById('appHeaderIcon');
+
+            if (isViolation) {
+                card.className = 'session-card card-violation';
+                badge.className = 'session-badge badge-red';
+                badgeText.innerText = '🚨 Infração Detectada';
+                headerTitle.innerText = 'Liberação de Infração';
+                headerIcon.className = 'logo-badge badge-violation';
+                btnText.innerText = 'LIBERAR RETOMADA DA PROVA';
+                btn.className = 'btn btn-danger';
+            } else {
+                card.className = 'session-card';
+                badge.className = 'session-badge';
+                badgeText.innerText = '🛡️ Encerramento de Prova';
+                headerTitle.innerText = 'Autorização de Saída';
+                headerIcon.className = 'logo-badge';
+                btnText.innerText = 'AUTORIZAR SAÍDA DA PROVA';
+                btn.className = 'btn btn-success';
+            }
+
+            resetUnlockButton(isViolation);
+
+            // Tenta buscar detalhes adicionais no Firebase
+            fetchSessionDetailsFromFirebase(sessionId);
         }
 
-        function resetUnlockButton() {
+        async function fetchSessionDetailsFromFirebase(sessionId) {
+            try {
+                const res = await fetch(`${FIREBASE_DB_URL}/sessions/${sessionId.toLowerCase()}.json`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data) {
+                        const details = document.getElementById('sessionDetails');
+                        document.getElementById('detailType').innerText = data.type === 'VIOLATION' ? 'Bloqueio por Infração' : 'Encerramento Normal';
+                        if (data.reason) {
+                            document.getElementById('detailReason').innerText = data.reason;
+                            document.getElementById('detailReasonRow').style.display = 'block';
+                        }
+                        if (data.machine) {
+                            document.getElementById('detailMachine').innerText = data.machine;
+                            document.getElementById('detailMachineRow').style.display = 'block';
+                        }
+                        details.style.display = 'flex';
+                    }
+                }
+            } catch (e) {
+                // Silencioso se não houver dados
+            }
+        }
+
+        function resetUnlockButton(isViolation) {
             const btn = document.getElementById('unlockBtn');
             if (btn) {
                 btn.disabled = false;
-                btn.className = 'btn btn-success';
+                btn.className = isViolation ? 'btn btn-danger' : 'btn btn-success';
+                const text = isViolation ? 'LIBERAR RETOMADA DA PROVA' : 'AUTORIZAR SAÍDA DA PROVA';
                 btn.innerHTML = `
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6z"/>
                     </svg>
-                    DESBLOQUEAR NAVEGADOR
+                    <span>${text}</span>
                 `;
             }
         }
@@ -711,6 +857,7 @@
             currentSession = null;
             targetIp = null;
             targetPort = null;
+            currentType = 'exit';
             startScanner();
         }
 
@@ -729,90 +876,70 @@
                         <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.25)" stroke-width="3"></circle>
                         <path d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" fill="#ffffff"></path>
                     </svg>
-                    Enviando desbloqueio...
+                    Transmitindo autorização...
                 `;
             }
 
-            // 1. Envio Direto Local Offline (se IP/Porta disponíveis pelo QR Code)
+            let transmitSuccess = false;
+
+            // CANAL 1: Google Firebase Realtime Database (Nuvem em Tempo Real)
+            try {
+                const fbUrl = `${FIREBASE_DB_URL}/sessions/${sessionId}/status.json`;
+                const fbResponse = await fetch(fbUrl, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify('UNLOCKED')
+                });
+
+                if (fbResponse.ok) {
+                    transmitSuccess = true;
+                    console.log('[SEB] Firebase Realtime DB atualizado com sucesso!');
+                }
+            } catch (fbErr) {
+                console.warn('[SEB] Erro Firebase:', fbErr);
+            }
+
+            // CANAL 2: Envio Direto Local Offline (se IP/Porta disponíveis pelo QR Code)
             if (targetIp && targetPort) {
                 tryLocalDirectUnlock(sessionId, targetIp, targetPort);
             }
 
-            // 2. Envio via Cloud (ntfy.sh)
+            // CANAL 3: Envio via Cloud Fallback (ntfy.sh)
             const topic = `seb_unlock_${sessionId}`;
-            const url = `https://ntfy.sh/${topic}`;
+            const ntfyUrl = `https://ntfy.sh/${topic}`;
 
-            console.log(`[SEB] Enviando desbloqueio para tópico: ${topic}`);
+            try {
+                const ntfyRes = await fetch(ntfyUrl, {
+                    method: 'POST',
+                    body: 'UNLOCKED',
+                    headers: { 'Content-Type': 'text/plain' }
+                });
 
-            const MAX_TENTATIVAS = 3;
-            let tentativa = 0;
-            let sucesso = false;
-
-            while (tentativa < MAX_TENTATIVAS && !sucesso) {
-                tentativa++;
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        body: 'UNLOCKED',
-                        headers: {
-                            'Content-Type': 'text/plain'
-                        }
-                    });
-
-                    fetch(url, { method: 'POST', body: 'UNLOCKED', mode: 'no-cors' }).catch(() => {});
-
-                    if (response.ok) {
-                        sucesso = true;
-                        showStatus('✅ Comando enviado com sucesso! O computador do aluno foi desbloqueado.', true);
-                        if (btn) {
-                            btn.className = 'btn btn-success-done';
-                            btn.innerHTML = `
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                                </svg>
-                                DESBLOQUEADO COM SUCESSO ✔
-                            `;
-                        }
-                    } else {
-                        const errText = await response.text().catch(() => response.status);
-                        console.warn(`[SEB] Tentativa ${tentativa} falhou: HTTP ${response.status} - ${errText}`);
-                        if (tentativa < MAX_TENTATIVAS) {
-                            showStatus(`⏳ Tentativa ${tentativa} falhou. Tentando novamente...`, false);
-                            await new Promise(r => setTimeout(r, 1000));
-                        }
-                    }
-                } catch (err) {
-                    console.error(`[SEB] Tentativa ${tentativa} erro de rede:`, err);
-                    try {
-                        await fetch(url, { method: 'POST', body: 'UNLOCKED', mode: 'no-cors' });
-                        sucesso = true;
-                        showStatus('✅ Comando enviado com sucesso! O computador do aluno foi desbloqueado.', true);
-                        if (btn) {
-                            btn.className = 'btn btn-success-done';
-                            btn.innerHTML = `DESBLOQUEADO COM SUCESSO ✔`;
-                        }
-                        break;
-                    } catch (e2) {}
-
-                    if (tentativa < MAX_TENTATIVAS) {
-                        showStatus(`⏳ Erro de rede (tentativa ${tentativa}). Tentando novamente...`, false);
-                        await new Promise(r => setTimeout(r, 1000));
-                    }
+                if (ntfyRes.ok) {
+                    transmitSuccess = true;
                 }
+            } catch (ntfyErr) {
+                try {
+                    fetch(ntfyUrl, { method: 'POST', body: 'UNLOCKED', mode: 'no-cors' }).catch(() => {});
+                    transmitSuccess = true;
+                } catch (e) {}
             }
 
-            if (!sucesso) {
-                showStatus('❌ Falha ao transmitir o comando após 3 tentativas. Verifique sua conexão e tente novamente.', false);
+            if (transmitSuccess || targetIp) {
+                const actionText = (currentType === 'violation') ? 'A prova do aluno foi retomada.' : 'O encerramento foi autorizado com sucesso.';
+                showStatus(`✅ Autorizado com sucesso! ${actionText}`, true);
                 if (btn) {
-                    btn.disabled = false;
-                    btn.className = 'btn btn-primary';
+                    btn.className = 'btn btn-success-done';
                     btn.innerHTML = `
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                         </svg>
-                        TENTAR NOVAMENTE
+                        DESBLOQUEADO COM SUCESSO ✔
                     `;
                 }
+            } else {
+                showStatus('❌ Não foi possível transmitir o desbloqueio. Verifique a conexão do celular e tente novamente.', false);
+                resetUnlockButton(currentType === 'violation');
             }
         }
 
