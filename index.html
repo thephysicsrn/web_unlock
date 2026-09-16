@@ -816,9 +816,9 @@
                 console.error('[SSE] Erro EventSource:', err);
             }
 
-            // 3. Polling de alta frequência (a cada 2 segundos) para garantia total
-            setInterval(pollNtfyAlerts, 2000);
-            setInterval(pollFirebaseActiveRequests, 3500);
+            // 3. Polling de fallback gentil (a cada 6 segundos)
+            setInterval(pollNtfyAlerts, 6000);
+            setInterval(pollFirebaseActiveRequests, 6000);
         }
 
         async function pollNtfyAlerts() {
