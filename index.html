@@ -60,6 +60,11 @@
             position: relative;
             margin: auto 0;
             box-sizing: border-box;
+            transition: max-width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .container.container-wide {
+            max-width: 1320px;
         }
 
         .header-top {
@@ -595,6 +600,284 @@
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* Computer Toolbar & Search */
+        .comp-toolbar {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            margin-bottom: 0.95rem;
+            text-align: left;
+        }
+
+        .comp-search-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .search-icon-wrap {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon-wrap svg {
+            position: absolute;
+            left: 0.85rem;
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .comp-search-box {
+            width: 100%;
+            padding: 0.65rem 0.85rem 0.65rem 2.4rem;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        .comp-search-box:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .view-mode-toggle {
+            display: flex;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 2px;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+
+        .view-toggle-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.45rem 0.65rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.15s;
+        }
+
+        .view-toggle-btn:hover {
+            color: #fff;
+        }
+
+        .view-toggle-btn.active {
+            background: #1e293b;
+            color: #38bdf8;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        .comp-filter-chips {
+            display: flex;
+            gap: 0.4rem;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            scrollbar-width: thin;
+        }
+
+        .filter-chip {
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 0.32rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: all 0.15s;
+        }
+
+        .filter-chip:hover {
+            border-color: #64748b;
+            color: #fff;
+        }
+
+        .filter-chip.active {
+            background: #1e293b;
+            border-color: #38bdf8;
+            color: #38bdf8;
+        }
+
+        .filter-chip.chip-blocked.active {
+            border-color: #ef4444;
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .filter-chip.chip-exam.active {
+            border-color: #10b981;
+            color: #34d399;
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .filter-chip.chip-offline.active {
+            border-color: #64748b;
+            color: #cbd5e1;
+            background: rgba(100, 116, 139, 0.2);
+        }
+
+        /* High-Density Matrix Grid Layout for 252 Machines */
+        .computers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 0.65rem;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: left;
+        }
+
+        .comp-tile {
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 0.75rem 0.65rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 110px;
+            position: relative;
+            transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+            overflow: hidden;
+        }
+
+        .comp-tile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            border-color: #475569;
+        }
+
+        .comp-tile.tile-exam {
+            border-left: 3px solid #10b981;
+        }
+
+        .comp-tile.tile-violation {
+            border: 1.5px solid #ef4444;
+            border-left: 4px solid #ef4444;
+            background: linear-gradient(135deg, #180d11 0%, #2e1017 100%);
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.35);
+            animation: tilePulse 1.8s infinite;
+        }
+
+        .comp-tile.tile-exit {
+            border: 1.5px solid #f59e0b;
+            border-left: 4px solid #f59e0b;
+            background: linear-gradient(135deg, #1f1807 0%, #2f2208 100%);
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.35);
+            animation: tilePulseExit 1.8s infinite;
+        }
+
+        .comp-tile.tile-offline {
+            border-left: 3px solid #475569;
+            opacity: 0.5;
+        }
+
+        @keyframes tilePulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 22px rgba(239, 68, 68, 0.75); }
+        }
+
+        @keyframes tilePulseExit {
+            0%, 100% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
+            50% { box-shadow: 0 0 22px rgba(245, 158, 11, 0.75); }
+        }
+
+        .tile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            margin-bottom: 0.35rem;
+            gap: 0.2rem;
+        }
+
+        .tile-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: inline-block;
+        }
+
+        .dot-exam { background: #10b981; box-shadow: 0 0 6px #10b981; }
+        .dot-violation { background: #ef4444; box-shadow: 0 0 8px #ef4444; animation: livePulse 1s infinite; }
+        .dot-exit { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; animation: livePulse 1s infinite; }
+        .dot-offline { background: #64748b; }
+
+        .tile-machine-name {
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .tile-user-name {
+            font-size: 0.74rem;
+            color: #94a3b8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.4rem;
+        }
+
+        .tile-action-btn {
+            width: 100%;
+            padding: 0.4rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .tile-action-violation {
+            background: #ef4444;
+        }
+        .tile-action-violation:hover {
+            background: #dc2626;
+        }
+
+        .tile-action-exit {
+            background: #f59e0b;
+        }
+        .tile-action-exit:hover {
+            background: #d97706;
+        }
     </style>
 </head>
 <body>
@@ -711,23 +994,58 @@
 
             <!-- TAB 2: COMPUTADORES CONECTADOS EM TEMPO REAL -->
             <div id="tabComputers" style="display: none;">
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.85rem;">
-                    <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 12px; padding: 0.65rem 0.4rem; text-align: center;">
-                        <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Conectados</div>
+                <!-- Estatísticas Rápidas de Prova -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.45rem; margin-bottom: 0.85rem;">
+                    <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 12px; padding: 0.55rem 0.3rem; text-align: center;">
+                        <div style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Total</div>
                         <div id="statTotalComputers" style="font-size: 1.25rem; font-weight: 800; color: #38bdf8;">0</div>
                     </div>
-                    <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 12px; padding: 0.65rem 0.4rem; text-align: center;">
-                        <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Em Prova</div>
+                    <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 12px; padding: 0.55rem 0.3rem; text-align: center;">
+                        <div style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Em Prova</div>
                         <div id="statInExam" style="font-size: 1.25rem; font-weight: 800; color: #34d399;">0</div>
                     </div>
-                    <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 12px; padding: 0.65rem 0.4rem; text-align: center;">
-                        <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Bloqueados</div>
+                    <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 12px; padding: 0.55rem 0.3rem; text-align: center;">
+                        <div style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Bloqueados</div>
                         <div id="statBlocked" style="font-size: 1.25rem; font-weight: 800; color: #f87171;">0</div>
+                    </div>
+                    <div style="background: #0f172a; border: 1px solid var(--border-color); border-radius: 12px; padding: 0.55rem 0.3rem; text-align: center;">
+                        <div style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Offline</div>
+                        <div id="statOffline" style="font-size: 1.25rem; font-weight: 800; color: #64748b;">0</div>
                     </div>
                 </div>
 
-                <div class="live-feed-container" id="computersList">
-                    <div class="feed-empty" id="computersEmptyState">
+                <!-- Barra de Ferramentas: Busca, Filtros e Alternador Grade/Lista -->
+                <div class="comp-toolbar">
+                    <div class="comp-search-row">
+                        <div class="search-icon-wrap">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                            <input type="text" id="compSearchInput" class="comp-search-box" placeholder="🔍 Buscar por máquina (ex: MESA-01) ou aluno..." oninput="onComputerSearchChange(this.value)">
+                        </div>
+                        <div class="view-mode-toggle">
+                            <button class="view-toggle-btn active" id="btnViewGrid" onclick="setComputerViewMode('grid')" title="Grade Matriz (Visualização Compacta 252)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z"/></svg>
+                                <span>Grade</span>
+                            </button>
+                            <button class="view-toggle-btn" id="btnViewList" onclick="setComputerViewMode('list')" title="Lista Detalhada">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+                                <span>Lista</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="comp-filter-chips">
+                        <button class="filter-chip active" id="chip-all" onclick="setComputerFilter('all')">Todos (<span id="count-all">0</span>)</button>
+                        <button class="filter-chip chip-blocked" id="chip-blocked" onclick="setComputerFilter('blocked')">🚨 Bloqueados (<span id="count-blocked">0</span>)</button>
+                        <button class="filter-chip chip-exam" id="chip-exam" onclick="setComputerFilter('exam')">● Em Prova (<span id="count-exam">0</span>)</button>
+                        <button class="filter-chip chip-offline" id="chip-offline" onclick="setComputerFilter('offline')">○ Offline (<span id="count-offline">0</span>)</button>
+                    </div>
+                </div>
+
+                <!-- Lista / Grade de Computadores Conectados -->
+                <div id="computersContainer" class="computers-grid">
+                    <div class="feed-empty" id="computersEmptyState" style="grid-column: 1 / -1; width: 100%;">
                         <svg viewBox="0 0 24 24" fill="currentColor">
                             <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
                         </svg>
@@ -901,7 +1219,50 @@
             }
         }
 
+        let computerViewMode = 'grid'; // 'grid' | 'list'
+        let computerFilter = 'all'; // 'all' | 'blocked' | 'exam' | 'offline'
+        let computerSearchQuery = '';
+
+        function setComputerViewMode(mode) {
+            computerViewMode = mode;
+            const btnGrid = document.getElementById('btnViewGrid');
+            const btnList = document.getElementById('btnViewList');
+            const container = document.getElementById('computersContainer');
+            if (btnGrid) btnGrid.className = mode === 'grid' ? 'view-toggle-btn active' : 'view-toggle-btn';
+            if (btnList) btnList.className = mode === 'list' ? 'view-toggle-btn active' : 'view-toggle-btn';
+            if (container) {
+                container.className = mode === 'grid' ? 'computers-grid' : 'live-feed-container';
+            }
+            renderComputers();
+        }
+
+        function setComputerFilter(filter) {
+            computerFilter = filter;
+            ['all', 'blocked', 'exam', 'offline'].forEach(f => {
+                const chip = document.getElementById(`chip-${f}`);
+                if (chip) {
+                    if (f === filter) chip.classList.add('active');
+                    else chip.classList.remove('active');
+                }
+            });
+            renderComputers();
+        }
+
+        function onComputerSearchChange(query) {
+            computerSearchQuery = (query || '').trim().toLowerCase();
+            renderComputers();
+        }
+
         function switchTab(tab) {
+            const container = document.querySelector('.container');
+            if (container) {
+                if (tab === 'computers') {
+                    container.classList.add('container-wide');
+                } else {
+                    container.classList.remove('container-wide');
+                }
+            }
+
             const feedBtn = document.getElementById('tabFeedBtn');
             const computersBtn = document.getElementById('tabComputersBtn');
             const historyBtn = document.getElementById('tabHistoryBtn');
@@ -962,128 +1323,250 @@
         }
 
         function renderComputers() {
-            const list = document.getElementById('computersList');
+            const container = document.getElementById('computersContainer');
             const empty = document.getElementById('computersEmptyState');
             const badge = document.getElementById('computersCountBadge');
             const statTotal = document.getElementById('statTotalComputers');
             const statInExam = document.getElementById('statInExam');
             const statBlocked = document.getElementById('statBlocked');
-            if (!list) return;
+            const statOffline = document.getElementById('statOffline');
+
+            const countAll = document.getElementById('count-all');
+            const countBlocked = document.getElementById('count-blocked');
+            const countExam = document.getElementById('count-exam');
+            const countOffline = document.getElementById('count-offline');
+
+            if (!container) return;
 
             const now = Date.now();
-            let totalOnline = 0;
+            let totalCount = 0;
             let inExamCount = 0;
             let blockedCount = 0;
+            let offlineCount = 0;
+
+            const itemsArray = [];
 
             connectedComputers.forEach((item, mName) => {
-                const isTimedOut = (now - item.lastSeen) > 60000;
-                const isOffline = item.status === 'OFFLINE' || isTimedOut;
-
-                if (!isOffline) {
-                    totalOnline++;
-                    if (item.status === 'BLOQUEADO_INFRACAO' || item.status === 'SOLICITANDO_SAIDA') {
-                        blockedCount++;
-                    } else {
-                        inExamCount++;
-                    }
-                }
-            });
-
-            if (badge) {
-                badge.innerText = totalOnline;
-                badge.style.display = totalOnline > 0 ? 'inline-block' : 'none';
-            }
-            if (statTotal) statTotal.innerText = totalOnline;
-            if (statInExam) statInExam.innerText = inExamCount;
-            if (statBlocked) statBlocked.innerText = blockedCount;
-
-            // Remove do DOM os cards de computadores que não existem mais no mapa
-            const existingCards = list.querySelectorAll('[id^="computer-card-"]');
-            existingCards.forEach(c => {
-                const m = c.id.replace('computer-card-', '');
-                if (!connectedComputers.has(m)) {
-                    c.remove();
-                }
-            });
-
-            if (connectedComputers.size === 0) {
-                if (empty) empty.style.display = 'block';
-                return;
-            }
-            if (empty) empty.style.display = 'none';
-
-            connectedComputers.forEach((item, mName) => {
+                totalCount++;
                 const isTimedOut = (now - item.lastSeen) > 60000;
                 const effectiveStatus = (item.status === 'OFFLINE' || isTimedOut) ? 'OFFLINE' : item.status;
                 const isViolation = effectiveStatus === 'BLOQUEADO_INFRACAO';
                 const isExit = effectiveStatus === 'SOLICITANDO_SAIDA';
                 const isBlocked = isViolation || isExit;
-                const isExam = effectiveStatus === 'EM_PROVA' || effectiveStatus === 'ONLINE';
+                const isOffline = effectiveStatus === 'OFFLINE';
+                const isExam = !isBlocked && !isOffline;
 
-                let card = document.getElementById(`computer-card-${mName}`);
-                if (!card) {
-                    card = document.createElement('div');
-                    card.id = `computer-card-${mName}`;
-                    list.appendChild(card);
+                if (isBlocked) blockedCount++;
+                else if (isOffline) offlineCount++;
+                else inExamCount++;
+
+                itemsArray.push({
+                    key: mName,
+                    item: item,
+                    effectiveStatus: effectiveStatus,
+                    isViolation: isViolation,
+                    isExit: isExit,
+                    isBlocked: isBlocked,
+                    isOffline: isOffline,
+                    isExam: isExam
+                });
+            });
+
+            // Atualiza estatísticas do cabeçalho
+            if (badge) {
+                const activeCount = totalCount - offlineCount;
+                badge.innerText = activeCount > 0 ? activeCount : totalCount;
+                badge.style.display = totalCount > 0 ? 'inline-block' : 'none';
+            }
+            if (statTotal) statTotal.innerText = totalCount;
+            if (statInExam) statInExam.innerText = inExamCount;
+            if (statBlocked) statBlocked.innerText = blockedCount;
+            if (statOffline) statOffline.innerText = offlineCount;
+
+            if (countAll) countAll.innerText = totalCount;
+            if (countBlocked) countBlocked.innerText = blockedCount;
+            if (countExam) countExam.innerText = inExamCount;
+            if (countOffline) countOffline.innerText = offlineCount;
+
+            // Filtra conforme busca e status
+            const filtered = itemsArray.filter(entry => {
+                if (computerFilter === 'blocked' && !entry.isBlocked) return false;
+                if (computerFilter === 'exam' && !entry.isExam) return false;
+                if (computerFilter === 'offline' && !entry.isOffline) return false;
+
+                if (computerSearchQuery) {
+                    const q = computerSearchQuery;
+                    const m = (entry.item.machine || '').toLowerCase();
+                    const u = (entry.item.user || '').toLowerCase();
+                    const ip = (entry.item.ip || '').toLowerCase();
+                    if (!m.includes(q) && !u.includes(q) && !ip.includes(q)) return false;
                 }
+                return true;
+            });
 
-                if (isViolation) {
-                    card.className = 'alert-card card-violation';
-                    card.style.borderLeftColor = '#ef4444';
-                    card.style.opacity = '1';
-                } else if (isExit) {
-                    card.className = 'alert-card card-exit';
-                    card.style.borderLeftColor = '#f59e0b';
-                    card.style.opacity = '1';
-                } else if (isExam) {
-                    card.className = 'alert-card';
-                    card.style.borderLeftColor = '#10b981';
-                    card.style.opacity = '1';
-                } else {
-                    card.className = 'alert-card';
-                    card.style.borderLeftColor = '#475569';
-                    card.style.opacity = '0.55';
-                }
+            // Ordenação Inteligente:
+            // 1º: Bloqueados (Infrações e Saídas) SEMPRE no topo para resposta imediata
+            // 2º: Computadores ativos em prova (ordem numérica/alfabética de máquina)
+            // 3º: Computadores offline no final
+            filtered.sort((a, b) => {
+                if (a.isBlocked && !b.isBlocked) return -1;
+                if (!a.isBlocked && b.isBlocked) return 1;
+                if (a.isOffline && !b.isOffline) return 1;
+                if (!a.isOffline && b.isOffline) return -1;
+                return a.item.machine.localeCompare(b.item.machine, undefined, { numeric: true, sensitivity: 'base' });
+            });
 
-                let statusBadgeHtml = '';
-                if (isViolation) {
-                    statusBadgeHtml = `<span class="alert-tag" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">🚨 INFRAÇÃO DETECTADA</span>`;
-                } else if (isExit) {
-                    statusBadgeHtml = `<span class="alert-tag" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">🚪 SAÍDA SOLICITADA</span>`;
-                } else if (isExam) {
-                    statusBadgeHtml = `<span class="alert-tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">● EM PROVA</span>`;
-                } else {
-                    statusBadgeHtml = `<span class="alert-tag" style="background: rgba(100, 116, 139, 0.2); color: #94a3b8;">○ OFFLINE</span>`;
-                }
-
-                const secondsAgo = Math.round((now - item.lastSeen) / 1000);
-                const lastSeenText = secondsAgo < 10 ? 'Agora mesmo' : `há ${secondsAgo}s`;
-
-                card.innerHTML = `
-                    <div class="alert-header">
-                        ${statusBadgeHtml}
-                        <span class="alert-time">⏱️ Visto: ${lastSeenText}</span>
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = 'feed-empty';
+                emptyMsg.style.gridColumn = '1 / -1';
+                emptyMsg.style.width = '100%';
+                emptyMsg.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 40px; height: 40px; color: #475569; margin-bottom: 0.5rem;">
+                        <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
+                    </svg>
+                    <div><strong>${computerSearchQuery ? 'Nenhum computador encontrado para a busca' : 'Nenhum computador detectado no momento'}</strong></div>
+                    <div style="font-size: 0.8rem; margin-top: 4px; color: #94a3b8;">
+                        ${computerSearchQuery ? 'Verifique o filtro ou digite outro termo.' : 'Quando os alunos abrirem o Navegador SESI, os computadores aparecerão aqui automaticamente.'}
                     </div>
-
-                    <div class="alert-machine">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
-                        </svg>
-                        <span>${item.machine}</span>
-                    </div>
-
-                    <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.4rem; display: flex; flex-wrap: wrap; gap: 0.75rem;">
-                        <span>👤 <strong>${item.user}</strong></span>
-                        ${item.ip ? `<span>🌐 IP: <code>${item.ip}</code></span>` : ''}
-                        ${item.battery ? `<span>${item.battery}</span>` : ''}
-                    </div>
-
-                    ${isBlocked ? `
-                        <button class="btn-unlock-action ${isViolation ? 'btn-unlock-violation' : 'btn-unlock-exit'}" style="margin-top: 0.75rem; padding: 0.65rem;" onclick="switchTab('feed')">
-                            VER SOLICITAÇÃO NA ABA PRINCIPAL
-                        </button>
-                    ` : ''}
                 `;
+                container.appendChild(emptyMsg);
+                return;
+            }
+
+            // Renderiza no modo escolhido (Grade Compacta vs Lista Detalhada)
+            container.innerHTML = '';
+
+            filtered.forEach(entry => {
+                const item = entry.item;
+                const mName = entry.key;
+                const secondsAgo = Math.round((now - item.lastSeen) / 1000);
+                const lastSeenText = secondsAgo < 10 ? 'Agora' : `${secondsAgo}s atrás`;
+
+                if (computerViewMode === 'grid') {
+                    // MODO GRADE COMPACTA (Ideal para 252 Computadores em Matriz)
+                    const tile = document.createElement('div');
+                    let tileClass = 'comp-tile';
+                    let dotClass = 'tile-status-dot';
+                    let statusLabel = 'Em Prova';
+
+                    if (entry.isViolation) {
+                        tileClass += ' tile-violation';
+                        dotClass += ' dot-violation';
+                        statusLabel = '🚨 Infração';
+                    } else if (entry.isExit) {
+                        tileClass += ' tile-exit';
+                        dotClass += ' dot-exit';
+                        statusLabel = '🚪 Saída';
+                    } else if (entry.isExam) {
+                        tileClass += ' tile-exam';
+                        dotClass += ' dot-exam';
+                        statusLabel = '● Prova';
+                    } else {
+                        tileClass += ' tile-offline';
+                        dotClass += ' dot-offline';
+                        statusLabel = '○ Offline';
+                    }
+
+                    tile.className = tileClass;
+                    tile.id = `tile-${mName}`;
+
+                    tile.innerHTML = `
+                        <div>
+                            <div class="tile-header">
+                                <span style="display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 700; color: ${entry.isViolation ? '#f87171' : entry.isExit ? '#fbbf24' : entry.isExam ? '#34d399' : '#94a3b8'};">
+                                    <span class="${dotClass}"></span>
+                                    <span>${statusLabel}</span>
+                                </span>
+                                <span style="color: #64748b; font-size: 0.68rem;">${lastSeenText}</span>
+                            </div>
+
+                            <div class="tile-machine-name" title="${item.machine}">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink: 0; color: #94a3b8;">
+                                    <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
+                                </svg>
+                                <span>${item.machine}</span>
+                            </div>
+
+                            <div class="tile-user-name" title="${item.user}">
+                                👤 ${item.user}
+                            </div>
+                        </div>
+
+                        ${entry.isBlocked ? `
+                            <button class="tile-action-btn ${entry.isViolation ? 'tile-action-violation' : 'tile-action-exit'}" onclick="switchTab('feed')" title="Ver solicitação e autorizar">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2z"/></svg>
+                                <span>${entry.isViolation ? 'Liberar' : 'Autorizar'}</span>
+                            </button>
+                        ` : `
+                            <div style="font-size: 0.68rem; color: #64748b; display: flex; justify-content: space-between; align-items: center;">
+                                <span>${item.battery ? item.battery : (item.ip ? item.ip : 'Ativo')}</span>
+                                ${entry.isExam ? '<span style="color: #10b981; font-weight: 700;">OK</span>' : ''}
+                            </div>
+                        `}
+                    `;
+
+                    container.appendChild(tile);
+                } else {
+                    // MODO LISTA DETALHADA
+                    const card = document.createElement('div');
+                    card.id = `computer-card-${mName}`;
+
+                    if (entry.isViolation) {
+                        card.className = 'alert-card card-violation';
+                        card.style.borderLeftColor = '#ef4444';
+                    } else if (entry.isExit) {
+                        card.className = 'alert-card card-exit';
+                        card.style.borderLeftColor = '#f59e0b';
+                    } else if (entry.isExam) {
+                        card.className = 'alert-card';
+                        card.style.borderLeftColor = '#10b981';
+                    } else {
+                        card.className = 'alert-card';
+                        card.style.borderLeftColor = '#475569';
+                        card.style.opacity = '0.55';
+                    }
+
+                    let statusBadgeHtml = '';
+                    if (entry.isViolation) {
+                        statusBadgeHtml = `<span class="alert-tag" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">🚨 INFRAÇÃO DETECTADA</span>`;
+                    } else if (entry.isExit) {
+                        statusBadgeHtml = `<span class="alert-tag" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">🚪 SAÍDA SOLICITADA</span>`;
+                    } else if (entry.isExam) {
+                        statusBadgeHtml = `<span class="alert-tag" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">● EM PROVA</span>`;
+                    } else {
+                        statusBadgeHtml = `<span class="alert-tag" style="background: rgba(100, 116, 139, 0.2); color: #94a3b8;">○ OFFLINE</span>`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="alert-header">
+                            ${statusBadgeHtml}
+                            <span class="alert-time">⏱️ Visto: ${lastSeenText}</span>
+                        </div>
+
+                        <div class="alert-machine">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
+                            </svg>
+                            <span>${item.machine}</span>
+                        </div>
+
+                        <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.4rem; display: flex; flex-wrap: wrap; gap: 0.75rem;">
+                            <span>👤 <strong>${item.user}</strong></span>
+                            ${item.ip ? `<span>🌐 IP: <code>${item.ip}</code></span>` : ''}
+                            ${item.battery ? `<span>${item.battery}</span>` : ''}
+                        </div>
+
+                        ${entry.isBlocked ? `
+                            <button class="btn-unlock-action ${entry.isViolation ? 'btn-unlock-violation' : 'btn-unlock-exit'}" style="margin-top: 0.75rem; padding: 0.65rem;" onclick="switchTab('feed')">
+                                VER SOLICITAÇÃO NA ABA PRINCIPAL
+                            </button>
+                        ` : ''}
+                    `;
+
+                    container.appendChild(card);
+                }
             });
         }
 
