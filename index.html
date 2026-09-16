@@ -582,6 +582,13 @@
                     <span>Solicitações</span>
                     <span class="badge-count" id="feedCountBadge" style="display: none;">0</span>
                 </button>
+                <button class="tab-btn" id="tabHistoryBtn" onclick="switchTab('history')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+                    </svg>
+                    <span>Histórico</span>
+                    <span class="badge-count" id="historyCountBadge" style="display: none; background: #10b981;">0</span>
+                </button>
                 <button class="tab-btn" id="tabScanBtn" onclick="switchTab('scan')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M3 5v4h2V5h4V3H5c-1.1 0-2 .9-2 2zm2 10H3v4c0 1.1.9 2 2 2h4v-2H5v-4zm14 4h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4zm0-16h-4v2h4v4h2V5c0-1.1-.9-2-2-2z"/>
@@ -603,7 +610,24 @@
                 </div>
             </div>
 
-            <!-- TAB 2: SCANNER DE QR CODE (FALLBACK) -->
+            <!-- TAB 2: HISTÓRICO DE LIBERAÇÕES REALIZADAS -->
+            <div id="tabHistory" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; padding: 0 4px;">
+                    <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;">Máquinas Liberadas</span>
+                    <button onclick="clearHistory()" style="background: transparent; border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;">Limpar</button>
+                </div>
+                <div class="live-feed-container" id="historyList">
+                    <div class="feed-empty" id="historyEmptyState">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                        </svg>
+                        <div><strong>Nenhum histórico registrado</strong></div>
+                        <div style="font-size: 0.8rem; margin-top: 4px;">As máquinas autorizadas e liberadas ficarão salvas aqui para conferência.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: SCANNER DE QR CODE (FALLBACK) -->
             <div id="tabScan" style="display: none;">
                 <div class="scanner-container">
                     <div id="reader"></div>
@@ -634,7 +658,11 @@
         let sseEventSource = null;
         let audioContext = null;
         let audioEnabled = false;
-        const activeRequests = new Map();
+
+        const activeRequests = new Map(); // sessionId -> item
+        const machineToSessionMap = new Map(); // machineName -> sessionId
+        const authorizingSessions = new Set();
+        const unlockedSessions = new Set();
 
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -718,7 +746,9 @@
             document.getElementById('loginView').style.display = 'none';
             document.getElementById('mainAppView').style.display = 'block';
 
-            // Inicia escuta em tempo real (SSE + Polling de alta frequência)
+            renderHistory();
+
+            // Inicia escuta em tempo real (SSE + Polling de segurança)
             startAlertsListener();
 
             // Checa se há parâmetro direto na URL
@@ -741,23 +771,109 @@
 
         function switchTab(tab) {
             const feedBtn = document.getElementById('tabFeedBtn');
+            const historyBtn = document.getElementById('tabHistoryBtn');
             const scanBtn = document.getElementById('tabScanBtn');
             const tabFeed = document.getElementById('tabFeed');
+            const tabHistory = document.getElementById('tabHistory');
             const tabScan = document.getElementById('tabScan');
 
-            if (tab === 'feed') {
-                feedBtn.className = 'tab-btn active';
-                scanBtn.className = 'tab-btn';
-                tabFeed.style.display = 'block';
-                tabScan.style.display = 'none';
-                stopScanner();
-            } else {
-                feedBtn.className = 'tab-btn';
-                scanBtn.className = 'tab-btn active';
-                tabFeed.style.display = 'none';
-                tabScan.style.display = 'block';
+            feedBtn.className = tab === 'feed' ? 'tab-btn active' : 'tab-btn';
+            historyBtn.className = tab === 'history' ? 'tab-btn active' : 'tab-btn';
+            scanBtn.className = tab === 'scan' ? 'tab-btn active' : 'tab-btn';
+
+            tabFeed.style.display = tab === 'feed' ? 'block' : 'none';
+            tabHistory.style.display = tab === 'history' ? 'block' : 'none';
+            tabScan.style.display = tab === 'scan' ? 'block' : 'none';
+
+            if (tab === 'scan') {
                 startScanner();
+            } else {
+                stopScanner();
             }
+
+            if (tab === 'history') {
+                renderHistory();
+            }
+        }
+
+        /* GERENCIAMENTO DO HISTÓRICO DE MÁQUINAS LIBERADAS */
+        function getSavedHistory() {
+            try {
+                const raw = localStorage.getItem('sesi_unlock_history');
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveToHistory(entry) {
+            const hist = getSavedHistory();
+            hist.unshift(entry);
+            if (hist.length > 50) hist.pop();
+            try {
+                localStorage.setItem('sesi_unlock_history', JSON.stringify(hist));
+            } catch (e) {}
+            renderHistory();
+        }
+
+        function clearHistory() {
+            if (confirm('Deseja limpar todo o histórico de liberações?')) {
+                localStorage.removeItem('sesi_unlock_history');
+                renderHistory();
+            }
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            const empty = document.getElementById('historyEmptyState');
+            const countBadge = document.getElementById('historyCountBadge');
+            if (!list) return;
+
+            const hist = getSavedHistory();
+            if (countBadge) {
+                countBadge.innerText = hist.length;
+                countBadge.style.display = hist.length > 0 ? 'inline-block' : 'none';
+            }
+
+            const oldCards = list.querySelectorAll('.history-item-card');
+            oldCards.forEach(c => c.remove());
+
+            if (hist.length === 0) {
+                if (empty) empty.style.display = 'block';
+                return;
+            }
+            if (empty) empty.style.display = 'none';
+
+            hist.forEach(item => {
+                const isViolation = item.type === 'VIOLATION';
+                const card = document.createElement('div');
+                card.className = `alert-card history-item-card ${isViolation ? 'card-violation' : 'card-exit'}`;
+                card.style.borderLeftColor = '#10b981';
+
+                card.innerHTML = `
+                    <div class="alert-header">
+                        <span class="alert-tag" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">
+                            ${isViolation ? '🚨 INFRAÇÃO LIBERADA' : '🚪 SAÍDA AUTORIZADA'}
+                        </span>
+                        <span class="alert-time">⏱️ ${item.time}</span>
+                    </div>
+
+                    <div class="alert-machine">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
+                        </svg>
+                        <span>${item.machine}</span>
+                    </div>
+
+                    <div class="alert-reason" style="margin-bottom: 0.5rem;">${item.reason}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #94a3b8;">
+                        <span class="alert-session-pill" style="margin: 0;">Sessão: ${item.sessionId}</span>
+                        <span style="color: #34d399; font-weight: 700;">LIBERADO ✔</span>
+                    </div>
+                `;
+
+                list.appendChild(card);
+            });
         }
 
         /* PROCESSADOR CENTRAL DE MENSAGENS DE ALERTA */
@@ -769,18 +885,18 @@
             }
 
             if (data && (data.event === 'message' || !data.event)) {
-                let msg = data.message || data;
+                let msg = data.message !== undefined ? data.message : data;
                 let payload = null;
                 if (typeof msg === 'string') {
                     try { payload = JSON.parse(msg); } catch (e) { payload = { sessionId: msg, type: 'EXIT' }; }
-                } else {
+                } else if (typeof msg === 'object') {
                     payload = msg;
                 }
 
-                if (payload) {
+                if (payload && payload.sessionId) {
                     if (payload.status === 'CLEARED' || payload.status === 'UNLOCKED') {
                         removeAlert(payload.sessionId);
-                    } else if (payload.sessionId) {
+                    } else {
                         addOrUpdateAlert(payload, true);
                     }
                 }
@@ -856,21 +972,28 @@
             } catch (e) {}
         }
 
-        const authorizingSessions = new Set();
-
         function addOrUpdateAlert(item, playSound = true) {
             const sid = (item.sessionId || '').toUpperCase();
             if (!sid) return;
 
-            if (authorizingSessions.has(sid)) return;
+            // Se já foi desbloqueado ou está sendo autorizado agora, não reabre
+            if (unlockedSessions.has(sid) || authorizingSessions.has(sid)) return;
+
+            const machineName = (item.machine || 'Computador Aluno').toUpperCase().trim();
+
+            // DEDUPLICAÇÃO POR MÁQUINA: Uma máquina só pode ter 1 solicitação pendente por vez
+            if (machineToSessionMap.has(machineName)) {
+                const oldSid = machineToSessionMap.get(machineName);
+                if (oldSid !== sid) {
+                    activeRequests.delete(oldSid);
+                    const oldCard = document.getElementById(`card-${oldSid}`);
+                    if (oldCard) oldCard.remove();
+                }
+            }
+            machineToSessionMap.set(machineName, sid);
 
             const isNew = !activeRequests.has(sid);
             const existing = activeRequests.get(sid);
-
-            // Evita reprocessamento desnecessário se os dados não mudaram
-            if (existing && existing.type === (item.type || 'EXIT').toUpperCase() && existing.machine === (item.machine || '')) {
-                return;
-            }
 
             activeRequests.set(sid, {
                 sessionId: sid,
@@ -893,6 +1016,13 @@
         function removeAlert(sessionId) {
             const sid = (sessionId || '').toUpperCase();
             if (activeRequests.has(sid)) {
+                const item = activeRequests.get(sid);
+                if (item && item.machine) {
+                    const mName = item.machine.toUpperCase().trim();
+                    if (machineToSessionMap.get(mName) === sid) {
+                        machineToSessionMap.delete(mName);
+                    }
+                }
                 activeRequests.delete(sid);
             }
             authorizingSessions.delete(sid);
@@ -977,7 +1107,7 @@
             });
 
             // Remove do DOM quaisquer cards que não estão mais no activeRequests
-            const allDomCards = list.querySelectorAll('.alert-card');
+            const allDomCards = list.querySelectorAll('.alert-card:not(.history-item-card)');
             allDomCards.forEach(c => {
                 const sid = c.id.replace('card-', '');
                 if (!activeRequests.has(sid) && !authorizingSessions.has(sid)) {
@@ -989,6 +1119,15 @@
         async function authorizeSession(sessionId, type, ip, port) {
             const sid = (sessionId || '').toUpperCase();
             authorizingSessions.add(sid);
+            unlockedSessions.add(sid);
+
+            const item = activeRequests.get(sid) || {
+                machine: 'Computador Aluno',
+                user: 'Aluno',
+                type: type,
+                reason: type === 'VIOLATION' ? 'Infração de Foco' : 'Solicitação de Saída',
+                sessionId: sid
+            };
 
             const btn = document.getElementById(`btn-action-${sid}`);
             if (btn) {
@@ -1040,7 +1179,18 @@
                 `;
             }
 
-            showStatus(`✅ Autorização transmitida com sucesso para o computador ${sessionId}!`, true);
+            // Salva no Histórico com data e hora para auditoria
+            saveToHistory({
+                machine: item.machine,
+                user: item.user,
+                type: item.type,
+                reason: item.reason,
+                sessionId: sid,
+                time: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                date: new Date().toLocaleDateString('pt-BR')
+            });
+
+            showStatus(`✅ Autorização transmitida com sucesso para o computador ${item.machine} (${sid})!`, true);
 
             setTimeout(() => {
                 removeAlert(sessionId);
