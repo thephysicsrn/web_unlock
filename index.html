@@ -776,7 +776,7 @@
 
     <script>
         const GLOBAL_ALERT_TOPIC = "seb_alerts_sesi";
-        const FIREBASE_DB_URL = "https://sesi-secure-browser-default-rtdb.firebaseio.com";
+        const FIREBASE_DB_URL = "https://gestao-reuniao-2ccab-default-rtdb.firebaseio.com";
         const VALID_USERS = ["sesiescola", "admin", "professor", "suelma", "sesi", "fiscal", "ti"];
         const VALID_PASSWORDS = ["WindSurfe123", "WindSurfe", "windsurfe123", "windsurfe"];
 
@@ -1262,14 +1262,17 @@
             }
         }
 
-        /* ESCUTA EM TEMPO REAL VIA SSE (ntfy.sh) + POLLING CONTÍNUO */
+        /* ESCUTA EM TEMPO REAL VIA FIREBASE RTDB STREAM + SSE + POLLING CONTÍNUO */
         function startAlertsListener() {
             // 1. Busca inicial imediata
             pollNtfyAlerts();
             pollFirebaseActiveRequests();
             pollFirebaseTelemetry();
 
-            // 2. Conexão em tempo real SSE
+            // 2. Conexão em tempo real Firebase Realtime Database (EventSource 0ms)
+            startFirebaseRealtimeStream();
+
+            // 3. Conexão em tempo real SSE ntfy.sh (fallback)
             try {
                 if (sseEventSource) {
                     sseEventSource.close();
@@ -1286,17 +1289,55 @@
                     processRawAlertMessage(event.data);
                 });
 
-                sseEventSource.onerror = () => {
-                    console.warn('[SSE] Conexão oscilou. Polling mantém o feed atualizado.');
-                };
-            } catch (err) {
-                console.error('[SSE] Erro EventSource:', err);
-            }
+                sseEventSource.onerror = () => {};
+            } catch (err) {}
 
-            // 3. Polling contínuo de alta velocidade (a cada 3 segundos)
-            setInterval(pollNtfyAlerts, 3000);
-            setInterval(pollFirebaseActiveRequests, 3000);
-            setInterval(pollFirebaseTelemetry, 3000);
+            // 4. Polling contínuo de alta velocidade (a cada 2.5 segundos)
+            setInterval(pollFirebaseTelemetry, 2500);
+            setInterval(pollFirebaseActiveRequests, 2500);
+            setInterval(pollNtfyAlerts, 4000);
+        }
+
+        function startFirebaseRealtimeStream() {
+            try {
+                if (window.fbEventSource) {
+                    window.fbEventSource.close();
+                }
+                window.fbEventSource = new EventSource(`${FIREBASE_DB_URL}/.json`);
+                window.fbEventSource.addEventListener('put', (e) => {
+                    try {
+                        const parsed = JSON.parse(e.data);
+                        if (!parsed) return;
+                        const path = parsed.path || '';
+                        const data = parsed.data;
+
+                        if (path === '/' && data && typeof data === 'object') {
+                            if (data.active_requests) {
+                                Object.keys(data.active_requests).forEach(k => {
+                                    const req = data.active_requests[k];
+                                    if (req && req.sessionId && req.status === 'LOCKED') addOrUpdateAlert(req, true);
+                                });
+                            }
+                            if (data.telemetry) {
+                                Object.keys(data.telemetry).forEach(k => {
+                                    const dev = data.telemetry[k];
+                                    if (dev && dev.machine) updateConnectedComputer(dev);
+                                });
+                            }
+                        } else if (path.startsWith('/active_requests')) {
+                            if (data && data.sessionId) {
+                                if (data.status === 'LOCKED') addOrUpdateAlert(data, true);
+                                else if (data.status === 'UNLOCKED' || data.status === 'CLEARED') removeAlert(data.sessionId);
+                            } else if (data === null) {
+                                pollFirebaseActiveRequests();
+                            }
+                        } else if (path.startsWith('/telemetry')) {
+                            if (data && data.machine) updateConnectedComputer(data);
+                            else if (data === null) pollFirebaseTelemetry();
+                        }
+                    } catch (err) {}
+                });
+            } catch (err) {}
         }
 
         async function pollNtfyAlerts() {
