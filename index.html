@@ -856,11 +856,22 @@
             } catch (e) {}
         }
 
+        const authorizingSessions = new Set();
+
         function addOrUpdateAlert(item, playSound = true) {
             const sid = (item.sessionId || '').toUpperCase();
             if (!sid) return;
 
+            if (authorizingSessions.has(sid)) return;
+
             const isNew = !activeRequests.has(sid);
+            const existing = activeRequests.get(sid);
+
+            // Evita reprocessamento desnecessário se os dados não mudaram
+            if (existing && existing.type === (item.type || 'EXIT').toUpperCase() && existing.machine === (item.machine || '')) {
+                return;
+            }
+
             activeRequests.set(sid, {
                 sessionId: sid,
                 type: (item.type || 'EXIT').toUpperCase(),
@@ -869,7 +880,7 @@
                 reason: item.reason || (item.type === 'VIOLATION' ? 'Infração de Foco' : 'Solicitação de Saída'),
                 ip: item.ip || '',
                 port: item.port || '',
-                time: item.time || new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                time: existing ? existing.time : (item.time || new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
             });
 
             renderFeed();
@@ -883,75 +894,103 @@
             const sid = (sessionId || '').toUpperCase();
             if (activeRequests.has(sid)) {
                 activeRequests.delete(sid);
-                renderFeed();
+            }
+            authorizingSessions.delete(sid);
+
+            const card = document.getElementById(`card-${sid}`);
+            if (card) {
+                card.style.transition = 'opacity 0.25s, transform 0.25s';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    card.remove();
+                    updateFeedState();
+                }, 250);
+            } else {
+                updateFeedState();
+            }
+        }
+
+        function updateFeedState() {
+            const empty = document.getElementById('feedEmptyState');
+            const countBadge = document.getElementById('feedCountBadge');
+            const count = activeRequests.size;
+
+            if (count > 0) {
+                countBadge.innerText = count;
+                countBadge.style.display = 'inline-block';
+                if (empty) empty.style.display = 'none';
+            } else {
+                countBadge.style.display = 'none';
+                if (empty) empty.style.display = 'block';
             }
         }
 
         function renderFeed() {
             const list = document.getElementById('feedList');
-            const empty = document.getElementById('feedEmptyState');
-            const countBadge = document.getElementById('feedCountBadge');
+            if (!list) return;
 
-            const count = activeRequests.size;
-            if (count > 0) {
-                countBadge.innerText = count;
-                countBadge.style.display = 'inline-block';
-            } else {
-                countBadge.style.display = 'none';
-            }
+            updateFeedState();
 
-            // Remove todos os cards antigos
-            const oldCards = list.querySelectorAll('.alert-card');
-            oldCards.forEach(c => c.remove());
-
-            if (count === 0) {
-                empty.style.display = 'block';
-                return;
-            }
-
-            empty.style.display = 'none';
-
+            // Adiciona ou atualiza apenas os cards necessários de forma estável
             activeRequests.forEach(item => {
+                let card = document.getElementById(`card-${item.sessionId}`);
                 const isViolation = item.type === 'VIOLATION';
-                const card = document.createElement('div');
-                card.className = `alert-card ${isViolation ? 'card-violation' : 'card-exit'}`;
-                card.id = `card-${item.sessionId}`;
 
-                card.innerHTML = `
-                    <div class="alert-header">
-                        <span class="alert-tag ${isViolation ? 'tag-violation' : 'tag-exit'}">
-                            ${isViolation ? '🚨 INFRAÇÃO DETECTADA' : '🚪 SAÍDA SOLICITADA'}
-                        </span>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span class="alert-time">⏱️ ${item.time}</span>
-                            <button onclick="removeAlert('${item.sessionId}')" title="Dispensar do painel" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 2px 4px; border-radius: 4px;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#64748b'">✕</button>
+                if (!card) {
+                    // Novo card - cria no topo do feed
+                    card = document.createElement('div');
+                    card.className = `alert-card ${isViolation ? 'card-violation' : 'card-exit'}`;
+                    card.id = `card-${item.sessionId}`;
+
+                    card.innerHTML = `
+                        <div class="alert-header">
+                            <span class="alert-tag ${isViolation ? 'tag-violation' : 'tag-exit'}">
+                                ${isViolation ? '🚨 INFRAÇÃO DETECTADA' : '🚪 SAÍDA SOLICITADA'}
+                            </span>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span class="alert-time">⏱️ ${item.time}</span>
+                                <button onclick="removeAlert('${item.sessionId}')" title="Dispensar do painel" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 1rem; line-height: 1; padding: 2px 6px; border-radius: 4px;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#64748b'">✕</button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="alert-machine">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
-                        </svg>
-                        <span>${item.machine}</span>
-                    </div>
+                        <div class="alert-machine">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
+                            </svg>
+                            <span class="machine-label">${item.machine}</span>
+                        </div>
 
-                    <div class="alert-reason">${item.reason}</div>
-                    <div class="alert-session-pill">Sessão: ${item.sessionId}</div>
+                        <div class="alert-reason">${item.reason}</div>
+                        <div class="alert-session-pill">Sessão: ${item.sessionId}</div>
 
-                    <button class="btn-unlock-action ${isViolation ? 'btn-unlock-violation' : 'btn-unlock-exit'}" id="btn-action-${item.sessionId}" onclick="authorizeSession('${item.sessionId}', '${item.type}', '${item.ip}', '${item.port}')">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6z"/>
-                        </svg>
-                        <span>${isViolation ? 'LIBERAR PROVA AGORA' : 'AUTORIZAR SAÍDA AGORA'}</span>
-                    </button>
-                `;
+                        <button class="btn-unlock-action ${isViolation ? 'btn-unlock-violation' : 'btn-unlock-exit'}" id="btn-action-${item.sessionId}" onclick="authorizeSession('${item.sessionId}', '${item.type}', '${item.ip}', '${item.port}')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 17c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6-9h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM8.9 6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2H8.9V6z"/>
+                            </svg>
+                            <span>${isViolation ? 'LIBERAR PROVA AGORA' : 'AUTORIZAR SAÍDA AGORA'}</span>
+                        </button>
+                    `;
 
-                list.prepend(card);
+                    list.prepend(card);
+                }
+            });
+
+            // Remove do DOM quaisquer cards que não estão mais no activeRequests
+            const allDomCards = list.querySelectorAll('.alert-card');
+            allDomCards.forEach(c => {
+                const sid = c.id.replace('card-', '');
+                if (!activeRequests.has(sid) && !authorizingSessions.has(sid)) {
+                    c.remove();
+                }
             });
         }
 
         async function authorizeSession(sessionId, type, ip, port) {
-            const btn = document.getElementById(`btn-action-${sessionId}`);
+            const sid = (sessionId || '').toUpperCase();
+            authorizingSessions.add(sid);
+
+            const btn = document.getElementById(`btn-action-${sid}`);
             if (btn) {
                 btn.disabled = true;
                 btn.innerHTML = `
@@ -1005,7 +1044,7 @@
 
             setTimeout(() => {
                 removeAlert(sessionId);
-            }, 2000);
+            }, 1800);
         }
 
         /* EFEITOS SONOROS E NOTIFICAÇÕES NATIVAS */
