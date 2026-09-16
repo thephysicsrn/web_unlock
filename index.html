@@ -1264,8 +1264,10 @@
 
         /* ESCUTA EM TEMPO REAL VIA SSE (ntfy.sh) + POLLING CONTÍNUO */
         function startAlertsListener() {
-            // 1. Busca inicial imediata dos últimos 10 minutos
+            // 1. Busca inicial imediata
             pollNtfyAlerts();
+            pollFirebaseActiveRequests();
+            pollFirebaseTelemetry();
 
             // 2. Conexão em tempo real SSE
             try {
@@ -1291,9 +1293,10 @@
                 console.error('[SSE] Erro EventSource:', err);
             }
 
-            // 3. Polling de fallback gentil (a cada 6 segundos)
-            setInterval(pollNtfyAlerts, 6000);
-            setInterval(pollFirebaseActiveRequests, 6000);
+            // 3. Polling contínuo de alta velocidade (a cada 3 segundos)
+            setInterval(pollNtfyAlerts, 3000);
+            setInterval(pollFirebaseActiveRequests, 3000);
+            setInterval(pollFirebaseTelemetry, 3000);
         }
 
         async function pollNtfyAlerts() {
@@ -1324,6 +1327,23 @@
                             const item = data[k];
                             if (item && item.sessionId && item.status === 'LOCKED') {
                                 addOrUpdateAlert(item, false);
+                            }
+                        });
+                    }
+                }
+            } catch (e) {}
+        }
+
+        async function pollFirebaseTelemetry() {
+            try {
+                const res = await fetch(`${FIREBASE_DB_URL}/telemetry.json`, { cache: 'no-store' });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && typeof data === 'object') {
+                        Object.keys(data).forEach(k => {
+                            const item = data[k];
+                            if (item && item.machine) {
+                                updateConnectedComputer(item);
                             }
                         });
                     }
