@@ -1502,9 +1502,17 @@
 
             const cleanSid = sessionId.toLowerCase();
 
-            // 1. Envia sinal ao Firebase Realtime DB
+            // 1. Envia sinal ao Firebase Realtime DB (sessions e active_requests)
             try {
                 fetch(`${FIREBASE_DB_URL}/sessions/${cleanSid}/status.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify('UNLOCKED')
+                }).catch(() => {});
+            } catch (e) {}
+
+            try {
+                fetch(`${FIREBASE_DB_URL}/active_requests/${cleanSid}/status.json`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify('UNLOCKED')
