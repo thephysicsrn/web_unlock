@@ -3388,6 +3388,18 @@
             }
         }
 
+        function cleanPdfText(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/[🚪🚨●○⚡🔋✔⏳⚠️%]/g, '')
+                .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+                .replace(/[\u{2600}-\u{26FF}]/gu, '')
+                .replace(/[\u{2700}-\u{27BF}]/gu, '')
+                .replace(/[Ø=Þª%Ë(&¡]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
         async function downloadReportPDF() {
             const btn = document.getElementById('btnDownloadPDF');
             const origHtml = btn ? btn.innerHTML : '';
@@ -3427,56 +3439,79 @@
                     if (d.isExam) totalExam++;
                 });
 
-                // Prepara dados da tabela
-                const tableRows = dataset.map((item, idx) => [
-                    idx + 1,
-                    item.machine,
-                    item.user,
-                    item.battery ? `${item.ip}\n(${item.battery})` : item.ip,
-                    item.typeLabel,
-                    item.reason,
-                    `${item.time}\n${item.date}`,
-                    item.statusText
-                ]);
+                // Prepara dados da tabela sem emojis ou caracteres corrompidos
+                const tableRows = dataset.map((item, idx) => {
+                    let typeLabel = cleanPdfText(item.typeLabel || '');
+                    if (item.isViolation || typeLabel.includes('INFRAÇÃO')) typeLabel = 'INFRAÇÃO';
+                    else if (item.isExit || typeLabel.includes('SAÍDA')) typeLabel = 'SAÍDA';
+                    else if (item.isExam || typeLabel.includes('PROVA')) typeLabel = 'EM PROVA';
+                    else typeLabel = 'OFFLINE';
+
+                    let statusText = cleanPdfText(item.statusText || '');
+                    if (statusText.includes('AUTORIZADO')) statusText = 'AUTORIZADO';
+                    else if (statusText.includes('BLOQUEADO')) statusText = 'BLOQUEADO';
+                    else if (statusText.includes('REGULAR') || statusText.includes('ATIVO')) statusText = 'ATIVO';
+                    else if (statusText.includes('SOLICITANDO') || statusText.includes('PENDENTE')) statusText = 'PENDENTE';
+                    else statusText = 'OFFLINE';
+
+                    let ipStr = cleanPdfText(item.ip || 'Rede Local');
+                    let battStr = cleanPdfText(item.battery || '');
+                    let ipCell = ipStr;
+                    if (battStr) {
+                        const cleanBatt = battStr.replace(/[()]/g, '').trim();
+                        if (cleanBatt) ipCell += `\n(${cleanBatt})`;
+                    }
+
+                    return [
+                        idx + 1,
+                        cleanPdfText(item.machine || ''),
+                        cleanPdfText(item.user || 'Aluno'),
+                        ipCell,
+                        typeLabel,
+                        cleanPdfText(item.reason || 'Atividade Regular'),
+                        `${item.time || ''}\n${item.date || ''}`,
+                        statusText
+                    ];
+                });
 
                 if (tableRows.length === 0) {
                     tableRows.push(['-', 'Nenhum registro encontrado', '-', '-', '-', '-', '-', '-']);
                 }
 
-                // Gera a tabela com paginação automática e cabeçalho A4
+                // Gera a tabela com paginação automática e cabeçalhos adequados
                 doc.autoTable({
                     head: [['#', 'Máquina', 'Aluno', 'IP / Bateria', 'Tipo', 'Motivo / Ocorrência', 'Horário', 'Status']],
                     body: tableRows,
-                    startY: 64,
-                    margin: { top: 64, left: 10, right: 10, bottom: 20 },
+                    startY: 57,
+                    margin: { top: 22, left: 10, right: 10, bottom: 18 },
                     theme: 'grid',
                     headStyles: {
                         fillColor: [0, 75, 135], // Azul SESI #004B87
                         textColor: [255, 255, 255],
                         fontStyle: 'bold',
-                        fontSize: 8.5,
+                        fontSize: 8,
                         halign: 'left',
-                        cellPadding: 2.5
+                        cellPadding: 2
                     },
                     bodyStyles: {
-                        fontSize: 8,
+                        fontSize: 7.5,
                         textColor: [15, 23, 42],
                         lineColor: [203, 213, 225],
                         lineWidth: 0.15,
-                        cellPadding: 2
+                        cellPadding: 1.8
                     },
                     alternateRowStyles: {
                         fillColor: [248, 250, 252]
                     },
                     columnStyles: {
-                        0: { cellWidth: 9, halign: 'center', fontStyle: 'bold' },
-                        1: { cellWidth: 28, fontStyle: 'bold' },
-                        2: { cellWidth: 26 },
-                        3: { cellWidth: 24, fontSize: 7.5 },
-                        4: { cellWidth: 28, fontStyle: 'bold' },
-                        5: { cellWidth: 37 },
-                        6: { cellWidth: 20, fontSize: 7.5 },
-                        7: { cellWidth: 18, fontStyle: 'bold', fontSize: 7.5 }
+                        0: { cellWidth: 8, halign: 'center', fontStyle: 'bold' },
+                        1: { cellWidth: 34, fontStyle: 'bold' }, // Máquina com espaço para nomes longos
+                        2: { cellWidth: 28 }, // Aluno
+                        3: { cellWidth: 26, fontSize: 7 }, // IP / Bateria
+                        4: { cellWidth: 24, fontStyle: 'bold', halign: 'center' }, // Tipo
+                        5: { cellWidth: 34 }, // Motivo
+                        6: { cellWidth: 18, fontSize: 7, halign: 'center' }, // Horário
+                        7: { cellWidth: 18, fontStyle: 'bold', fontSize: 7, halign: 'center' } // Status
                     },
                     didParseCell: function(data) {
                         if (data.section === 'body' && data.column.index === 4) {
@@ -3487,110 +3522,136 @@
                                 data.cell.styles.textColor = [3, 105, 161]; // Azul claro
                             } else if (val.includes('PROVA')) {
                                 data.cell.styles.textColor = [21, 128, 61]; // Verde
+                            } else {
+                                data.cell.styles.textColor = [71, 85, 105]; // Cinza
                             }
                         }
                     },
                     didDrawPage: function(data) {
-                        // CABEÇALHO OFICIAL EM TODAS AS FOLHAS
+                        const isFirstPage = data.pageNumber === 1;
+
+                        // Barra azul superior SESI
                         doc.setFillColor(0, 75, 135);
-                        doc.rect(10, 8, 190, 1.5, 'F');
+                        doc.rect(10, 7, 190, 1.2, 'F');
 
-                        doc.setFont('helvetica', 'bold');
-                        doc.setFontSize(13);
-                        doc.setTextColor(0, 75, 135);
-                        doc.text('SESI • SERVIÇO SOCIAL DA INDÚSTRIA', 10, 15);
+                        if (isFirstPage) {
+                            // CABEÇALHO COMPLETO (FOLHA 1)
+                            doc.setFont('helvetica', 'bold');
+                            doc.setFontSize(12);
+                            doc.setTextColor(0, 75, 135);
+                            doc.text('SESI • SERVIÇO SOCIAL DA INDÚSTRIA', 10, 13.5);
 
-                        doc.setFont('helvetica', 'normal');
-                        doc.setFontSize(8);
-                        doc.setTextColor(71, 85, 105);
-                        doc.text('SISTEMA FIERN • GESTÃO DE AVALIAÇÕES E PROVAS SEGURAS', 10, 19.5);
+                            doc.setFont('helvetica', 'normal');
+                            doc.setFontSize(8);
+                            doc.setTextColor(71, 85, 105);
+                            doc.text('SISTEMA FIERN • GESTÃO DE AVALIAÇÕES E PROVAS SEGURAS', 10, 17.5);
 
-                        doc.setFontSize(7.5);
-                        doc.text(`EMISSÃO: ${dateStr} às ${timeStr}`, 200, 15, { align: 'right' });
-                        doc.text('STATUS: AUDITORIA OFICIAL', 200, 19.5, { align: 'right' });
+                            doc.setFontSize(7.5);
+                            doc.text(`EMISSÃO: ${dateStr} às ${timeStr}`, 200, 13.5, { align: 'right' });
+                            doc.text('STATUS: AUDITORIA OFICIAL', 200, 17.5, { align: 'right' });
 
-                        // Título do Documento
-                        doc.setFont('helvetica', 'bold');
-                        doc.setFontSize(10.5);
-                        doc.setTextColor(15, 23, 42);
-                        doc.text('EXTRATO DE ATIVIDADES E LIBERAÇÕES EM SALA', 105, 27, { align: 'center' });
+                            // Título do Documento
+                            doc.setFont('helvetica', 'bold');
+                            doc.setFontSize(10.5);
+                            doc.setTextColor(15, 23, 42);
+                            doc.text('EXTRATO DE ATIVIDADES E LIBERAÇÕES EM SALA', 105, 24.5, { align: 'center' });
 
-                        doc.setFontSize(8.5);
-                        doc.setTextColor(37, 99, 235);
-                        doc.text(examTitle, 105, 32, { align: 'center' });
+                            doc.setFontSize(8.5);
+                            doc.setTextColor(37, 99, 235);
+                            doc.text(examTitle, 105, 29.5, { align: 'center' });
 
-                        // Resumo Executivo (Card de KPIs)
-                        doc.setFillColor(248, 250, 252);
-                        doc.setDrawColor(203, 213, 225);
-                        doc.roundedRect(10, 36, 190, 20, 2, 2, 'FD');
+                            // Resumo Executivo (Card de KPIs)
+                            doc.setFillColor(248, 250, 252);
+                            doc.setDrawColor(203, 213, 225);
+                            doc.roundedRect(10, 33, 190, 19, 2, 2, 'FD');
 
-                        doc.setFontSize(7.5);
-                        doc.setFont('helvetica', 'bold');
-                        doc.setTextColor(100, 116, 139);
-                        doc.text('FISCAL RESPONSÁVEL', 14, 42);
-                        doc.text('REGISTROS LISTADOS', 64, 42);
-                        doc.text('TOTAL DE SAÍDAS', 114, 42);
-                        doc.text('TOTAL DE INFRAÇÕES', 160, 42);
+                            doc.setFontSize(7.5);
+                            doc.setFont('helvetica', 'bold');
+                            doc.setTextColor(100, 116, 139);
+                            doc.text('FISCAL RESPONSÁVEL', 14, 39);
+                            doc.text('REGISTROS LISTADOS', 64, 39);
+                            doc.text('TOTAL DE SAÍDAS', 114, 39);
+                            doc.text('TOTAL DE INFRAÇÕES', 160, 39);
 
-                        doc.setFontSize(8.5);
-                        doc.setTextColor(15, 23, 42);
-                        doc.text(proctorName, 14, 49);
-                        doc.setTextColor(37, 99, 235);
-                        doc.text(`${dataset.length} registros`, 64, 49);
-                        doc.setTextColor(217, 119, 6);
-                        doc.text(`${totalExits} liberações`, 114, 49);
-                        doc.setTextColor(220, 38, 38);
-                        doc.text(`${totalViolations} ocorrências`, 160, 49);
+                            doc.setFontSize(8.5);
+                            doc.setTextColor(15, 23, 42);
+                            doc.text(proctorName, 14, 46);
+                            doc.setTextColor(37, 99, 235);
+                            doc.text(`${dataset.length} registros`, 64, 46);
+                            doc.setTextColor(217, 119, 6);
+                            doc.text(`${totalExits} liberações`, 114, 46);
+                            doc.setTextColor(220, 38, 38);
+                            doc.text(`${totalViolations} ocorrências`, 160, 46);
+                        } else {
+                            // CABEÇALHO COMPACTO (FOLHAS 2+)
+                            doc.setFont('helvetica', 'bold');
+                            doc.setFontSize(9.5);
+                            doc.setTextColor(0, 75, 135);
+                            doc.text('SESI • EXTRATO DE AUDITORIA EM SALA (CONTINUAÇÃO)', 10, 13.5);
 
-                        // RODAPÉ
-                        const pageCount = doc.internal.getNumberOfPages();
-                        doc.setDrawColor(203, 213, 225);
-                        doc.line(10, 285, 200, 285);
+                            doc.setFont('helvetica', 'normal');
+                            doc.setFontSize(8);
+                            doc.setTextColor(71, 85, 105);
+                            doc.text(`Avaliação: ${examTitle}`, 10, 17.5);
 
-                        doc.setFont('helvetica', 'normal');
-                        doc.setFontSize(7.5);
-                        doc.setTextColor(100, 116, 139);
-                        doc.text('SESI Escola • Sistema FIERN • Gestão de Provas Seguras', 10, 290);
-                        doc.text(`Página ${data.pageNumber} de ${pageCount}`, 105, 290, { align: 'center' });
-                        doc.text(`Emissão: ${dateStr} ${timeStr}`, 200, 290, { align: 'right' });
+                            doc.setFontSize(7.5);
+                            doc.text(`EMISSÃO: ${dateStr} às ${timeStr}`, 200, 13.5, { align: 'right' });
+                            doc.text(`FOLHA ${data.pageNumber}`, 200, 17.5, { align: 'right' });
+                        }
                     }
                 });
 
                 // Bloco de Assinaturas após a tabela
-                let finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY ? doc.lastAutoTable.finalY : 70) + 12;
-                if (finalY > 235) {
+                let finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY ? doc.lastAutoTable.finalY : 70) + 8;
+                if (finalY > 245) {
                     doc.addPage();
-                    finalY = 60;
+                    finalY = 28;
                 }
 
                 doc.setDrawColor(15, 23, 42);
                 doc.setLineWidth(0.3);
                 // Linha Fiscal
-                doc.line(20, finalY + 16, 90, finalY + 16);
+                doc.line(20, finalY + 14, 90, finalY + 14);
                 doc.setFont('helvetica', 'bold');
-                doc.setFontSize(8.5);
+                doc.setFontSize(8);
                 doc.setTextColor(15, 23, 42);
-                doc.text(proctorName, 55, finalY + 20.5, { align: 'center' });
+                doc.text(proctorName, 55, finalY + 18, { align: 'center' });
                 doc.setFont('helvetica', 'normal');
-                doc.setFontSize(7.5);
+                doc.setFontSize(7);
                 doc.setTextColor(100, 116, 139);
-                doc.text('Fiscal de Sala / Responsável pela Aplicação', 55, finalY + 24.5, { align: 'center' });
+                doc.text('Fiscal de Sala / Responsável pela Aplicação', 55, finalY + 22, { align: 'center' });
 
                 // Linha Coordenação
-                doc.line(120, finalY + 16, 190, finalY + 16);
+                doc.line(120, finalY + 14, 190, finalY + 14);
                 doc.setFont('helvetica', 'bold');
-                doc.setFontSize(8.5);
+                doc.setFontSize(8);
                 doc.setTextColor(15, 23, 42);
-                doc.text('Coordenação Pedagógica / TI', 155, finalY + 20.5, { align: 'center' });
+                doc.text('Coordenação Pedagógica / TI', 155, finalY + 18, { align: 'center' });
                 doc.setFont('helvetica', 'normal');
-                doc.setFontSize(7.5);
+                doc.setFontSize(7);
                 doc.setTextColor(100, 116, 139);
-                doc.text('SESI Escola • Sistema FIERN', 155, finalY + 24.5, { align: 'center' });
+                doc.text('SESI Escola • Sistema FIERN', 155, finalY + 22, { align: 'center' });
 
                 // Autenticação Criptográfica
                 doc.setFontSize(6.5);
                 doc.setTextColor(148, 163, 184);
-                doc.text('Relatório emitido automaticamente pelo Navegador Seguro SESI • Autenticação Criptográfica SHA-256', 105, finalY + 34, { align: 'center' });
+                doc.text('Relatório emitido automaticamente pelo Navegador Seguro SESI • Autenticação Criptográfica SHA-256', 105, finalY + 29, { align: 'center' });
+
+                // NUMERAÇÃO DE PÁGINAS CORRETA EM TODAS AS FOLHAS (Pós-processamento)
+                const totalPages = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= totalPages; i++) {
+                    doc.setPage(i);
+                    doc.setDrawColor(203, 213, 225);
+                    doc.setLineWidth(0.2);
+                    doc.line(10, 286, 200, 286);
+
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(7.5);
+                    doc.setTextColor(100, 116, 139);
+                    doc.text('SESI Escola • Sistema FIERN • Gestão de Provas Seguras', 10, 291);
+                    doc.text(`Página ${i} de ${totalPages}`, 105, 291, { align: 'center' });
+                    doc.text(`Emissão: ${dateStr} ${timeStr}`, 200, 291, { align: 'right' });
+                }
 
                 // Salva o PDF com nome amigável
                 const cleanTitle = examTitle.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
