@@ -3114,18 +3114,22 @@
                 } else {
                     pageItems.forEach((row, idx) => {
                         const globalIdx = startNum + idx + 1;
+                        const badgeBg = row.isViolation ? '#fee2e2' : (row.isExit ? '#e0f2fe' : (row.isExam ? '#dcfce7' : '#f1f5f9'));
+                        const badgeColor = row.isViolation ? '#b91c1c' : (row.isExit ? '#0369a1' : (row.isExam ? '#15803d' : '#475569'));
+                        const badgeBorder = row.isViolation ? '#fecaca' : (row.isExit ? '#bae6fd' : (row.isExam ? '#bbf7d0' : '#e2e8f0'));
+
                         rowsHtml += `
                             <tr>
-                                <td style="text-align: center; font-weight: bold; width: 32px;">${globalIdx}</td>
-                                <td><strong>${row.machine}</strong></td>
-                                <td>${row.user}</td>
-                                <td style="font-size: 10px;"><code>${row.ip}</code> ${row.battery ? `(${row.battery})` : ''}</td>
-                                <td>
-                                    <span class="print-badge ${row.typeClass}">${row.typeLabel}</span>
+                                <td style="border: 1px solid #cbd5e1; padding: 5px 6px; text-align: center; font-weight: bold; width: 32px; color: #0f172a;">${globalIdx}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a;"><strong>${row.machine}</strong></td>
+                                <td style="border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a;">${row.user}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 5px 6px; font-size: 10px; color: #334155;"><code>${row.ip}</code> ${row.battery ? `(${row.battery})` : ''}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 5px 6px; text-align: center;">
+                                    <span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 9px; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder};">${row.typeLabel}</span>
                                 </td>
-                                <td>${row.reason}</td>
-                                <td style="white-space: nowrap; font-size: 10px;">${row.time} <span style="color:#64748b;">(${row.date})</span></td>
-                                <td style="font-size: 10px; font-weight: bold;">${row.statusText}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 5px 6px; color: #1e293b;">${row.reason}</td>
+                                <td style="border: 1px solid #cbd5e1; padding: 5px 6px; white-space: nowrap; font-size: 10px; color: #334155;">${row.time} <span style="color:#64748b;">(${row.date})</span></td>
+                                <td style="border: 1px solid #cbd5e1; padding: 5px 6px; font-size: 10px; font-weight: bold; color: #0f172a;">${row.statusText}</td>
                             </tr>
                         `;
                     });
@@ -3223,17 +3227,17 @@
 
                 // Tabela da Folha
                 const tableHtml = `
-                    <table class="print-table" style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                    <table class="print-table" style="width: 100%; border-collapse: collapse; font-size: 11px; background: #ffffff;">
                         <thead>
                             <tr style="background: #f1f5f9;">
-                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px; text-align: center;">#</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px;">Máquina</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px;">Aluno</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px;">IP / Rede</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px;">Tipo de Evento</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px;">Motivo / Ocorrência</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px;">Horário</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px;">Status</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px; text-align: center; color: #0f172a;">#</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a;">Máquina</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a;">Aluno</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a;">IP / Rede</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a; text-align: center;">Tipo de Evento</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a;">Motivo / Ocorrência</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a;">Horário</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 5px 6px; color: #0f172a;">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -3259,7 +3263,7 @@
 
                 // Monta a folha para Impressão / PDF
                 printSheetsHtml += `
-                    <div class="print-sheet">
+                    <div class="print-sheet" style="background: #ffffff; color: #000000; padding: 4mm 0; box-sizing: border-box;">
                         <div>
                             ${headerHtml}
                             ${tableHtml}
@@ -3277,10 +3281,9 @@
         function printCurrentReport() {
             renderReportPreview();
             try {
-                // Remove qualquer modal temporariamente do layout de impressão antes de disparar
                 window.print();
             } catch (e) {
-                console.warn("window.print() falhou ou não suportado, abrindo em nova aba:", e);
+                console.warn("window.print() falhou, abrindo em nova aba:", e);
                 openReportInNewTab();
             }
         }
@@ -3351,17 +3354,6 @@
         .print-table tr:nth-child(even) {
             background-color: #f8fafc !important;
         }
-        .print-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 9px;
-        }
-        .print-badge-exit { background: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #bae6fd !important; }
-        .print-badge-violation { background: #fee2e2 !important; color: #b91c1c !important; border: 1px solid #fecaca !important; }
-        .print-badge-exam { background: #dcfce7 !important; color: #15803d !important; border: 1px solid #bbf7d0 !important; }
-        .print-badge-offline { background: #f1f5f9 !important; color: #475569 !important; border: 1px solid #e2e8f0 !important; }
         @media print {
             .no-print-bar { display: none !important; }
             body { padding: 0 !important; }
@@ -3370,9 +3362,9 @@
 </head>
 <body>
     <div class="no-print-bar" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; background: #0f172a; color: #fff; padding: 12px 18px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-        <div style="font-weight: bold; font-size: 14px;">📄 Visualização Oficial do Extrato SESI (${examTitle})</div>
+        <div style="font-weight: bold; font-size: 14px;">📄 Extrato Oficial SESI (${examTitle})</div>
         <div style="display: flex; gap: 10px;">
-            <button onclick="window.print()" style="padding: 8px 18px; background: #004B87; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+            <button onclick="window.print()" style="padding: 8px 18px; background: #004B87; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
                 🖨️ Imprimir / Salvar em PDF
             </button>
             <button onclick="window.close()" style="padding: 8px 14px; background: #334155; color: #cbd5e1; border: none; border-radius: 6px; cursor: pointer;">
@@ -3404,7 +3396,7 @@
             }
 
             const printDoc = document.getElementById('printableReportDocument');
-            if (!printDoc) {
+            if (!printDoc || !printDoc.innerHTML.trim()) {
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = origHtml;
@@ -3416,31 +3408,52 @@
             const cleanTitle = examTitle.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
             const dateIso = new Date().toISOString().slice(0, 10);
 
-            // Container temporário para renderizar sem interferências
-            const tempWrap = document.createElement('div');
-            tempWrap.style.position = 'fixed';
-            tempWrap.style.left = '-9999px';
-            tempWrap.style.top = '0';
-            tempWrap.style.width = '794px'; // ~210mm a 96 DPI
-            tempWrap.style.background = '#ffffff';
-            tempWrap.style.color = '#000000';
-            tempWrap.style.fontFamily = 'Arial, Helvetica, sans-serif';
-            tempWrap.innerHTML = printDoc.innerHTML;
-            document.body.appendChild(tempWrap);
+            // Monta o container visível e estilizado na raiz do documento para captura
+            const renderWrapper = document.createElement('div');
+            renderWrapper.id = 'pdfExportRenderBox';
+            renderWrapper.style.cssText = 'position: fixed; left: 0; top: 0; width: 800px; background: #ffffff; color: #000000; z-index: 9999999; padding: 24px; font-family: Arial, Helvetica, sans-serif; box-sizing: border-box; overflow: visible;';
+            renderWrapper.innerHTML = printDoc.innerHTML;
+            document.body.appendChild(renderWrapper);
+
+            // Garante que cada folha seja exibida com layout completo e dimensões nítidas
+            const sheets = renderWrapper.querySelectorAll('.print-sheet');
+            sheets.forEach((s, idx) => {
+                s.style.display = 'flex';
+                s.style.flexDirection = 'column';
+                s.style.justifyContent = 'space-between';
+                s.style.background = '#ffffff';
+                s.style.color = '#000000';
+                s.style.minHeight = '1060px';
+                s.style.padding = '12px 0';
+                s.style.boxSizing = 'border-box';
+                if (idx < sheets.length - 1) {
+                    s.style.pageBreakAfter = 'always';
+                    s.style.breakAfter = 'page';
+                    s.style.marginBottom = '24px';
+                }
+            });
 
             const opt = {
-                margin: [8, 10, 10, 10],
+                margin: [6, 8, 8, 8],
                 filename: `Extrato_Auditoria_${cleanTitle}_${dateIso}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, letterRendering: true, logging: false },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: 850,
+                    backgroundColor: '#ffffff'
+                },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak: { mode: ['css', 'legacy'] }
             };
 
             try {
                 if (typeof html2pdf !== 'undefined') {
-                    await html2pdf().set(opt).from(tempWrap).save();
-                    showStatus("✅ Extrato PDF baixado com sucesso para o seu dispositivo!", true);
+                    await html2pdf().set(opt).from(renderWrapper).save();
+                    showStatus("✅ Extrato PDF baixado com sucesso!", true);
                 } else {
                     openReportInNewTab();
                 }
@@ -3448,8 +3461,8 @@
                 console.error("Erro ao gerar PDF:", err);
                 openReportInNewTab();
             } finally {
-                if (tempWrap.parentNode) {
-                    tempWrap.parentNode.removeChild(tempWrap);
+                if (renderWrapper.parentNode) {
+                    renderWrapper.parentNode.removeChild(renderWrapper);
                 }
                 if (btn) {
                     btn.disabled = false;
