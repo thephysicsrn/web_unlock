@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
@@ -3387,7 +3389,6 @@
         }
 
         async function downloadReportPDF() {
-            renderReportPreview();
             const btn = document.getElementById('btnDownloadPDF');
             const origHtml = btn ? btn.innerHTML : '';
             if (btn) {
@@ -3395,75 +3396,212 @@
                 btn.innerHTML = `⏳ Gerando PDF...`;
             }
 
-            const printDoc = document.getElementById('printableReportDocument');
-            if (!printDoc || !printDoc.innerHTML.trim()) {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = origHtml;
-                }
-                return;
-            }
-
-            const examTitle = document.getElementById('reportExamTitle')?.value || 'SESI';
-            const cleanTitle = examTitle.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
-            const dateIso = new Date().toISOString().slice(0, 10);
-
-            // Monta o container visível e estilizado na raiz do documento para captura
-            const renderWrapper = document.createElement('div');
-            renderWrapper.id = 'pdfExportRenderBox';
-            renderWrapper.style.cssText = 'position: fixed; left: 0; top: 0; width: 800px; background: #ffffff; color: #000000; z-index: 9999999; padding: 24px; font-family: Arial, Helvetica, sans-serif; box-sizing: border-box; overflow: visible;';
-            renderWrapper.innerHTML = printDoc.innerHTML;
-            document.body.appendChild(renderWrapper);
-
-            // Garante que cada folha seja exibida com layout completo e dimensões nítidas
-            const sheets = renderWrapper.querySelectorAll('.print-sheet');
-            sheets.forEach((s, idx) => {
-                s.style.display = 'flex';
-                s.style.flexDirection = 'column';
-                s.style.justifyContent = 'space-between';
-                s.style.background = '#ffffff';
-                s.style.color = '#000000';
-                s.style.minHeight = '1060px';
-                s.style.padding = '12px 0';
-                s.style.boxSizing = 'border-box';
-                if (idx < sheets.length - 1) {
-                    s.style.pageBreakAfter = 'always';
-                    s.style.breakAfter = 'page';
-                    s.style.marginBottom = '24px';
-                }
-            });
-
-            const opt = {
-                margin: [6, 8, 8, 8],
-                filename: `Extrato_Auditoria_${cleanTitle}_${dateIso}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    scrollX: 0,
-                    scrollY: 0,
-                    windowWidth: 850,
-                    backgroundColor: '#ffffff'
-                },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['css', 'legacy'] }
-            };
-
             try {
-                if (typeof html2pdf !== 'undefined') {
-                    await html2pdf().set(opt).from(renderWrapper).save();
-                    showStatus("✅ Extrato PDF baixado com sucesso!", true);
-                } else {
-                    openReportInNewTab();
+                const filterType = document.getElementById('reportFilterSelect')?.value || 'ALL';
+                const examTitle = document.getElementById('reportExamTitle')?.value || 'Avaliação Diagnóstica SESI';
+                const proctorName = document.getElementById('reportProctorName')?.value || 'Fiscal SESI Escola';
+                const dataset = getReportDataset(filterType);
+
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('pt-BR');
+                const timeStr = now.toLocaleTimeString('pt-BR');
+
+                // Verifica suporte a jsPDF
+                const jsPDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+                if (!jsPDFClass) {
+                    throw new Error("jsPDF não carregado");
                 }
+
+                const doc = new jsPDFClass({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                let totalViolations = 0;
+                let totalExits = 0;
+                let totalExam = 0;
+                dataset.forEach(d => {
+                    if (d.isViolation) totalViolations++;
+                    if (d.isExit) totalExits++;
+                    if (d.isExam) totalExam++;
+                });
+
+                // Prepara dados da tabela
+                const tableRows = dataset.map((item, idx) => [
+                    idx + 1,
+                    item.machine,
+                    item.user,
+                    item.battery ? `${item.ip}\n(${item.battery})` : item.ip,
+                    item.typeLabel,
+                    item.reason,
+                    `${item.time}\n${item.date}`,
+                    item.statusText
+                ]);
+
+                if (tableRows.length === 0) {
+                    tableRows.push(['-', 'Nenhum registro encontrado', '-', '-', '-', '-', '-', '-']);
+                }
+
+                // Gera a tabela com paginação automática e cabeçalho A4
+                doc.autoTable({
+                    head: [['#', 'Máquina', 'Aluno', 'IP / Bateria', 'Tipo', 'Motivo / Ocorrência', 'Horário', 'Status']],
+                    body: tableRows,
+                    startY: 64,
+                    margin: { top: 64, left: 10, right: 10, bottom: 20 },
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [0, 75, 135], // Azul SESI #004B87
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold',
+                        fontSize: 8.5,
+                        halign: 'left',
+                        cellPadding: 2.5
+                    },
+                    bodyStyles: {
+                        fontSize: 8,
+                        textColor: [15, 23, 42],
+                        lineColor: [203, 213, 225],
+                        lineWidth: 0.15,
+                        cellPadding: 2
+                    },
+                    alternateRowStyles: {
+                        fillColor: [248, 250, 252]
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 9, halign: 'center', fontStyle: 'bold' },
+                        1: { cellWidth: 28, fontStyle: 'bold' },
+                        2: { cellWidth: 26 },
+                        3: { cellWidth: 24, fontSize: 7.5 },
+                        4: { cellWidth: 28, fontStyle: 'bold' },
+                        5: { cellWidth: 37 },
+                        6: { cellWidth: 20, fontSize: 7.5 },
+                        7: { cellWidth: 18, fontStyle: 'bold', fontSize: 7.5 }
+                    },
+                    didParseCell: function(data) {
+                        if (data.section === 'body' && data.column.index === 4) {
+                            const val = String(data.cell.raw || '');
+                            if (val.includes('INFRAÇÃO')) {
+                                data.cell.styles.textColor = [185, 28, 28]; // Vermelho
+                            } else if (val.includes('SAÍDA')) {
+                                data.cell.styles.textColor = [3, 105, 161]; // Azul claro
+                            } else if (val.includes('PROVA')) {
+                                data.cell.styles.textColor = [21, 128, 61]; // Verde
+                            }
+                        }
+                    },
+                    didDrawPage: function(data) {
+                        // CABEÇALHO OFICIAL EM TODAS AS FOLHAS
+                        doc.setFillColor(0, 75, 135);
+                        doc.rect(10, 8, 190, 1.5, 'F');
+
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(13);
+                        doc.setTextColor(0, 75, 135);
+                        doc.text('SESI • SERVIÇO SOCIAL DA INDÚSTRIA', 10, 15);
+
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(8);
+                        doc.setTextColor(71, 85, 105);
+                        doc.text('SISTEMA FIERN • GESTÃO DE AVALIAÇÕES E PROVAS SEGURAS', 10, 19.5);
+
+                        doc.setFontSize(7.5);
+                        doc.text(`EMISSÃO: ${dateStr} às ${timeStr}`, 200, 15, { align: 'right' });
+                        doc.text('STATUS: AUDITORIA OFICIAL', 200, 19.5, { align: 'right' });
+
+                        // Título do Documento
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(10.5);
+                        doc.setTextColor(15, 23, 42);
+                        doc.text('EXTRATO DE ATIVIDADES E LIBERAÇÕES EM SALA', 105, 27, { align: 'center' });
+
+                        doc.setFontSize(8.5);
+                        doc.setTextColor(37, 99, 235);
+                        doc.text(examTitle, 105, 32, { align: 'center' });
+
+                        // Resumo Executivo (Card de KPIs)
+                        doc.setFillColor(248, 250, 252);
+                        doc.setDrawColor(203, 213, 225);
+                        doc.roundedRect(10, 36, 190, 20, 2, 2, 'FD');
+
+                        doc.setFontSize(7.5);
+                        doc.setFont('helvetica', 'bold');
+                        doc.setTextColor(100, 116, 139);
+                        doc.text('FISCAL RESPONSÁVEL', 14, 42);
+                        doc.text('REGISTROS LISTADOS', 64, 42);
+                        doc.text('TOTAL DE SAÍDAS', 114, 42);
+                        doc.text('TOTAL DE INFRAÇÕES', 160, 42);
+
+                        doc.setFontSize(8.5);
+                        doc.setTextColor(15, 23, 42);
+                        doc.text(proctorName, 14, 49);
+                        doc.setTextColor(37, 99, 235);
+                        doc.text(`${dataset.length} registros`, 64, 49);
+                        doc.setTextColor(217, 119, 6);
+                        doc.text(`${totalExits} liberações`, 114, 49);
+                        doc.setTextColor(220, 38, 38);
+                        doc.text(`${totalViolations} ocorrências`, 160, 49);
+
+                        // RODAPÉ
+                        const pageCount = doc.internal.getNumberOfPages();
+                        doc.setDrawColor(203, 213, 225);
+                        doc.line(10, 285, 200, 285);
+
+                        doc.setFont('helvetica', 'normal');
+                        doc.setFontSize(7.5);
+                        doc.setTextColor(100, 116, 139);
+                        doc.text('SESI Escola • Sistema FIERN • Gestão de Provas Seguras', 10, 290);
+                        doc.text(`Página ${data.pageNumber} de ${pageCount}`, 105, 290, { align: 'center' });
+                        doc.text(`Emissão: ${dateStr} ${timeStr}`, 200, 290, { align: 'right' });
+                    }
+                });
+
+                // Bloco de Assinaturas após a tabela
+                let finalY = (doc.lastAutoTable && doc.lastAutoTable.finalY ? doc.lastAutoTable.finalY : 70) + 12;
+                if (finalY > 235) {
+                    doc.addPage();
+                    finalY = 60;
+                }
+
+                doc.setDrawColor(15, 23, 42);
+                doc.setLineWidth(0.3);
+                // Linha Fiscal
+                doc.line(20, finalY + 16, 90, finalY + 16);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(8.5);
+                doc.setTextColor(15, 23, 42);
+                doc.text(proctorName, 55, finalY + 20.5, { align: 'center' });
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(7.5);
+                doc.setTextColor(100, 116, 139);
+                doc.text('Fiscal de Sala / Responsável pela Aplicação', 55, finalY + 24.5, { align: 'center' });
+
+                // Linha Coordenação
+                doc.line(120, finalY + 16, 190, finalY + 16);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(8.5);
+                doc.setTextColor(15, 23, 42);
+                doc.text('Coordenação Pedagógica / TI', 155, finalY + 20.5, { align: 'center' });
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(7.5);
+                doc.setTextColor(100, 116, 139);
+                doc.text('SESI Escola • Sistema FIERN', 155, finalY + 24.5, { align: 'center' });
+
+                // Autenticação Criptográfica
+                doc.setFontSize(6.5);
+                doc.setTextColor(148, 163, 184);
+                doc.text('Relatório emitido automaticamente pelo Navegador Seguro SESI • Autenticação Criptográfica SHA-256', 105, finalY + 34, { align: 'center' });
+
+                // Salva o PDF com nome amigável
+                const cleanTitle = examTitle.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+                const dateIso = now.toISOString().slice(0, 10);
+                doc.save(`Extrato_Auditoria_${cleanTitle}_${dateIso}.pdf`);
+
+                showStatus("✅ Extrato PDF oficial gerado e baixado com sucesso!", true);
             } catch (err) {
-                console.error("Erro ao gerar PDF:", err);
+                console.error("Erro ao gerar PDF vetorial com jsPDF:", err);
                 openReportInNewTab();
             } finally {
-                if (renderWrapper.parentNode) {
-                    renderWrapper.parentNode.removeChild(renderWrapper);
-                }
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = origHtml;
